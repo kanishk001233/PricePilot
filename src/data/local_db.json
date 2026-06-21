@@ -1,0 +1,1752 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Consumer Electronics",
+      "description": "Smartphones, laptops, accessories, and audio gear"
+    },
+    {
+      "id": "cat-2",
+      "name": "Home Appliances",
+      "description": "Smart devices, kitchenware, and climate control"
+    },
+    {
+      "id": "cat-3",
+      "name": "Fitness Gear",
+      "description": "Wearables, exercise equipment, and apparel"
+    },
+    {
+      "id": "cat-4",
+      "name": "Office Furniture",
+      "description": "Ergonomic chairs, desks, and office supplies"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "sku": "PP-EL-001",
+      "name": "AeroSound Pro ANC Headphones",
+      "categoryId": "cat-1",
+      "brand": "AeroSound",
+      "costPrice": 90,
+      "currentPrice": 199.99,
+      "minPrice": 120,
+      "maxPrice": 249.99,
+      "targetMargin": 45,
+      "inventory": 12,
+      "seasonalRelevance": "All Year",
+      "status": "Active",
+      "createdAt": "2026-04-16T17:00:21.557Z",
+      "updatedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "prod-2",
+      "sku": "PP-EL-002",
+      "name": "VoltCharge Pro 100W PowerBank",
+      "categoryId": "cat-1",
+      "brand": "VoltCharge",
+      "costPrice": 22,
+      "currentPrice": 49.99,
+      "minPrice": 35,
+      "maxPrice": 69.99,
+      "targetMargin": 50,
+      "inventory": 140,
+      "seasonalRelevance": "All Year",
+      "status": "Active",
+      "createdAt": "2026-04-16T17:00:21.557Z",
+      "updatedAt": "2026-06-10T17:00:21.557Z"
+    },
+    {
+      "id": "prod-3",
+      "sku": "PP-HA-101",
+      "name": "SmartBreeze Tower Fan v2",
+      "categoryId": "cat-2",
+      "brand": "SmartBreeze",
+      "costPrice": 45,
+      "currentPrice": 99.99,
+      "minPrice": 69.99,
+      "maxPrice": 149.99,
+      "targetMargin": 40,
+      "inventory": 65,
+      "seasonalRelevance": "Summer",
+      "status": "Active",
+      "createdAt": "2026-05-01T17:00:21.557Z",
+      "updatedAt": "2026-06-13T17:00:21.557Z"
+    },
+    {
+      "id": "prod-4",
+      "sku": "PP-FG-201",
+      "name": "TitanFit GPS Smartwatch",
+      "categoryId": "cat-3",
+      "brand": "TitanFit",
+      "costPrice": 110,
+      "currentPrice": 249.99,
+      "minPrice": 180,
+      "maxPrice": 299.99,
+      "targetMargin": 50,
+      "inventory": 8,
+      "seasonalRelevance": "All Year",
+      "status": "Active",
+      "createdAt": "2026-03-17T17:00:21.557Z",
+      "updatedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "prod-5",
+      "sku": "PP-OF-301",
+      "name": "ErgoFlex Adjustable Desk Chair",
+      "categoryId": "cat-4",
+      "brand": "ErgoFlex",
+      "costPrice": 130,
+      "currentPrice": 299.99,
+      "minPrice": 220,
+      "maxPrice": 399.99,
+      "targetMargin": 40,
+      "inventory": 40,
+      "seasonalRelevance": "All Year",
+      "status": "Active",
+      "createdAt": "2026-02-15T17:00:21.557Z",
+      "updatedAt": "2026-06-05T17:00:21.557Z"
+    },
+    {
+      "id": "prod-6",
+      "sku": "PP-EL-003",
+      "name": "Chromax 27\" 4K Creator Monitor",
+      "categoryId": "cat-1",
+      "brand": "Chromax",
+      "costPrice": 180,
+      "currentPrice": 349.99,
+      "minPrice": 280,
+      "maxPrice": 449.99,
+      "targetMargin": 35,
+      "inventory": 15,
+      "seasonalRelevance": "All Year",
+      "status": "Active",
+      "createdAt": "2026-05-16T17:00:21.557Z",
+      "updatedAt": "2026-06-12T17:00:21.557Z"
+    },
+    {
+      "id": "prod-7",
+      "sku": "PP-HA-102",
+      "name": "AromaMist Smart Humidifier",
+      "categoryId": "cat-2",
+      "brand": "AromaMist",
+      "costPrice": 15,
+      "currentPrice": 39.99,
+      "minPrice": 25,
+      "maxPrice": 59.99,
+      "targetMargin": 45,
+      "inventory": 90,
+      "seasonalRelevance": "Winter",
+      "status": "Active",
+      "createdAt": "2026-03-07T17:00:21.557Z",
+      "updatedAt": "2026-05-31T17:00:21.557Z"
+    }
+  ],
+  "competitors": [
+    {
+      "id": "comp-1",
+      "name": "MegaRetail Inc.",
+      "website": "https://megaretail.com"
+    },
+    {
+      "id": "comp-2",
+      "name": "ElectroDirect",
+      "website": "https://electrodirect.com"
+    },
+    {
+      "id": "comp-3",
+      "name": "FitLife Supply Co.",
+      "website": "https://fitlifesupply.com"
+    }
+  ],
+  "competitorProducts": [
+    {
+      "id": "cprod-1",
+      "productId": "prod-1",
+      "competitorId": "comp-1",
+      "competitorSku": "MR-HP-909",
+      "url": "https://megaretail.com/p/MR-HP-909"
+    },
+    {
+      "id": "cprod-2",
+      "productId": "prod-1",
+      "competitorId": "comp-2",
+      "competitorSku": "ED-AERO-ANC",
+      "url": "https://electrodirect.com/p/ED-AERO-ANC"
+    },
+    {
+      "id": "cprod-3",
+      "productId": "prod-2",
+      "competitorId": "comp-1",
+      "competitorSku": "MR-PB-100W",
+      "url": "https://megaretail.com/p/MR-PB-100W"
+    },
+    {
+      "id": "cprod-4",
+      "productId": "prod-3",
+      "competitorId": "comp-1",
+      "competitorSku": "MR-FAN-V2",
+      "url": "https://megaretail.com/p/MR-FAN-V2"
+    },
+    {
+      "id": "cprod-5",
+      "productId": "prod-3",
+      "competitorId": "comp-2",
+      "competitorSku": "ED-SMART-BREEZE",
+      "url": "https://electrodirect.com/p/ED-SMART-BREEZE"
+    },
+    {
+      "id": "cprod-6",
+      "productId": "prod-4",
+      "competitorId": "comp-3",
+      "competitorSku": "FL-TITAN-GPS",
+      "url": "https://fitlifesupply.com/p/FL-TITAN-GPS"
+    },
+    {
+      "id": "cprod-7",
+      "productId": "prod-5",
+      "competitorId": "comp-1",
+      "competitorSku": "MR-ERGO-CHAIR",
+      "url": "https://megaretail.com/p/MR-ERGO-CHAIR"
+    }
+  ],
+  "competitorPriceSnapshots": [
+    {
+      "id": "cps-1",
+      "competitorProductId": "cprod-1",
+      "price": 219.99,
+      "recordedAt": "2026-05-31T17:00:21.557Z"
+    },
+    {
+      "id": "cps-2",
+      "competitorProductId": "cprod-1",
+      "price": 209.99,
+      "recordedAt": "2026-06-08T17:00:21.557Z"
+    },
+    {
+      "id": "cps-3",
+      "competitorProductId": "cprod-1",
+      "price": 189.99,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-4",
+      "competitorProductId": "cprod-2",
+      "price": 204.99,
+      "recordedAt": "2026-06-05T17:00:21.557Z"
+    },
+    {
+      "id": "cps-5",
+      "competitorProductId": "cprod-2",
+      "price": 204.99,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-6",
+      "competitorProductId": "cprod-3",
+      "price": 44.99,
+      "recordedAt": "2026-06-10T17:00:21.557Z"
+    },
+    {
+      "id": "cps-7",
+      "competitorProductId": "cprod-3",
+      "price": 42.99,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-8",
+      "competitorProductId": "cprod-4",
+      "price": 104.99,
+      "recordedAt": "2026-06-05T17:00:21.557Z"
+    },
+    {
+      "id": "cps-9",
+      "competitorProductId": "cprod-4",
+      "price": 109.99,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-10",
+      "competitorProductId": "cprod-5",
+      "price": 105,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-11",
+      "competitorProductId": "cprod-6",
+      "price": 259.99,
+      "recordedAt": "2026-06-07T17:00:21.557Z"
+    },
+    {
+      "id": "cps-12",
+      "competitorProductId": "cprod-6",
+      "price": 264.99,
+      "recordedAt": "2026-06-14T17:00:21.557Z"
+    },
+    {
+      "id": "cps-13",
+      "competitorProductId": "cprod-7",
+      "price": 289.99,
+      "recordedAt": "2026-06-03T17:00:21.557Z"
+    },
+    {
+      "id": "cps-14",
+      "competitorProductId": "cprod-7",
+      "price": 284.99,
+      "recordedAt": "2026-06-14T17:00:21.558Z"
+    }
+  ],
+  "businessRules": [
+    {
+      "id": "rule-1",
+      "name": "Absolute Minimum Margin Protection",
+      "code": "MIN_MARGIN",
+      "type": "margin",
+      "parameters": {
+        "minMarginPercent": 15
+      },
+      "isActive": true,
+      "updatedAt": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "rule-2",
+      "name": "Competitor Corridor Constraint",
+      "code": "COMPETITOR_CORRIDOR",
+      "type": "competitor",
+      "parameters": {
+        "maxPremiumPercent": 10,
+        "maxDiscountPercent": 15
+      },
+      "isActive": true,
+      "updatedAt": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "rule-3",
+      "name": "Stock Scarcity Premium",
+      "code": "STOCK_SCARCITY",
+      "type": "inventory",
+      "parameters": {
+        "inventoryThreshold": 15,
+        "pricePremiumPercent": 12
+      },
+      "isActive": true,
+      "updatedAt": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "rule-4",
+      "name": "High-Inventory Markdown",
+      "code": "STOCK_SURPLUS",
+      "type": "inventory",
+      "parameters": {
+        "inventoryThreshold": 100,
+        "priceDiscountPercent": 10
+      },
+      "isActive": true,
+      "updatedAt": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "rule-5",
+      "name": "Seasonal Demand Adjustments",
+      "code": "SEASONAL_BOOST",
+      "type": "seasonal",
+      "parameters": {
+        "peakMultiplier": 1.1,
+        "offPeakMultiplier": 0.9
+      },
+      "isActive": true,
+      "updatedAt": "2026-05-21T17:00:21.558Z"
+    }
+  ],
+  "salesTransactions": [
+    {
+      "id": "tx-1",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 179.99,
+      "revenue": 539.97,
+      "transactionDate": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "tx-2",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-3",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 179.99,
+      "revenue": 359.98,
+      "transactionDate": "2026-05-19T17:00:21.558Z"
+    },
+    {
+      "id": "tx-4",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 179.99,
+      "revenue": 539.97,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-5",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-05-21T17:00:21.558Z"
+    },
+    {
+      "id": "tx-6",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-05-22T17:00:21.558Z"
+    },
+    {
+      "id": "tx-7",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-05-23T17:00:21.558Z"
+    },
+    {
+      "id": "tx-8",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-05-24T17:00:21.558Z"
+    },
+    {
+      "id": "tx-9",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-05-25T17:00:21.558Z"
+    },
+    {
+      "id": "tx-10",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 179.99,
+      "revenue": 539.97,
+      "transactionDate": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "tx-11",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-12",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 179.99,
+      "revenue": 179.99,
+      "transactionDate": "2026-05-28T17:00:21.558Z"
+    },
+    {
+      "id": "tx-13",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-05-29T17:00:21.558Z"
+    },
+    {
+      "id": "tx-14",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-15",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-01T17:00:21.558Z"
+    },
+    {
+      "id": "tx-16",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-06-02T17:00:21.558Z"
+    },
+    {
+      "id": "tx-17",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-06-04T17:00:21.558Z"
+    },
+    {
+      "id": "tx-18",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-05T17:00:21.558Z"
+    },
+    {
+      "id": "tx-19",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-06T17:00:21.558Z"
+    },
+    {
+      "id": "tx-20",
+      "productId": "prod-1",
+      "quantity": 1,
+      "priceSold": 199.99,
+      "revenue": 199.99,
+      "transactionDate": "2026-06-07T17:00:21.558Z"
+    },
+    {
+      "id": "tx-21",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-06-08T17:00:21.558Z"
+    },
+    {
+      "id": "tx-22",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-09T17:00:21.558Z"
+    },
+    {
+      "id": "tx-23",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-10T17:00:21.558Z"
+    },
+    {
+      "id": "tx-24",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-06-11T17:00:21.558Z"
+    },
+    {
+      "id": "tx-25",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-26",
+      "productId": "prod-1",
+      "quantity": 3,
+      "priceSold": 199.99,
+      "revenue": 599.97,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-27",
+      "productId": "prod-1",
+      "quantity": 2,
+      "priceSold": 199.99,
+      "revenue": 399.98,
+      "transactionDate": "2026-06-14T17:00:21.558Z"
+    },
+    {
+      "id": "tx-28",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 44.99,
+      "revenue": 179.96,
+      "transactionDate": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "tx-29",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 49.99,
+      "revenue": 199.96,
+      "transactionDate": "2026-05-19T17:00:21.558Z"
+    },
+    {
+      "id": "tx-30",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-31",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 49.99,
+      "revenue": 199.96,
+      "transactionDate": "2026-05-21T17:00:21.558Z"
+    },
+    {
+      "id": "tx-32",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "tx-33",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 44.99,
+      "revenue": 224.95,
+      "transactionDate": "2026-05-28T17:00:21.558Z"
+    },
+    {
+      "id": "tx-34",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-05-29T17:00:21.558Z"
+    },
+    {
+      "id": "tx-35",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-36",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 49.99,
+      "revenue": 199.96,
+      "transactionDate": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "tx-37",
+      "productId": "prod-2",
+      "quantity": 6,
+      "priceSold": 49.99,
+      "revenue": 299.94,
+      "transactionDate": "2026-06-01T17:00:21.558Z"
+    },
+    {
+      "id": "tx-38",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-06-02T17:00:21.558Z"
+    },
+    {
+      "id": "tx-39",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-06-03T17:00:21.558Z"
+    },
+    {
+      "id": "tx-40",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 49.99,
+      "revenue": 199.96,
+      "transactionDate": "2026-06-04T17:00:21.558Z"
+    },
+    {
+      "id": "tx-41",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-06-05T17:00:21.558Z"
+    },
+    {
+      "id": "tx-42",
+      "productId": "prod-2",
+      "quantity": 6,
+      "priceSold": 49.99,
+      "revenue": 299.94,
+      "transactionDate": "2026-06-06T17:00:21.558Z"
+    },
+    {
+      "id": "tx-43",
+      "productId": "prod-2",
+      "quantity": 6,
+      "priceSold": 49.99,
+      "revenue": 299.94,
+      "transactionDate": "2026-06-08T17:00:21.558Z"
+    },
+    {
+      "id": "tx-44",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-06-09T17:00:21.558Z"
+    },
+    {
+      "id": "tx-45",
+      "productId": "prod-2",
+      "quantity": 6,
+      "priceSold": 49.99,
+      "revenue": 299.94,
+      "transactionDate": "2026-06-11T17:00:21.558Z"
+    },
+    {
+      "id": "tx-46",
+      "productId": "prod-2",
+      "quantity": 4,
+      "priceSold": 49.99,
+      "revenue": 199.96,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-47",
+      "productId": "prod-2",
+      "quantity": 6,
+      "priceSold": 49.99,
+      "revenue": 299.94,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-48",
+      "productId": "prod-2",
+      "quantity": 5,
+      "priceSold": 49.99,
+      "revenue": 249.95,
+      "transactionDate": "2026-06-14T17:00:21.558Z"
+    },
+    {
+      "id": "tx-49",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 89.99,
+      "revenue": 359.96,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-50",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-18T17:00:21.558Z"
+    },
+    {
+      "id": "tx-51",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-52",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-24T17:00:21.558Z"
+    },
+    {
+      "id": "tx-53",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-25T17:00:21.558Z"
+    },
+    {
+      "id": "tx-54",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "tx-55",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-56",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-29T17:00:21.558Z"
+    },
+    {
+      "id": "tx-57",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-58",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "tx-59",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-06-01T17:00:21.558Z"
+    },
+    {
+      "id": "tx-60",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-06-02T17:00:21.558Z"
+    },
+    {
+      "id": "tx-61",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-06-03T17:00:21.558Z"
+    },
+    {
+      "id": "tx-62",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-06-06T17:00:21.558Z"
+    },
+    {
+      "id": "tx-63",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-06-07T17:00:21.558Z"
+    },
+    {
+      "id": "tx-64",
+      "productId": "prod-3",
+      "quantity": 4,
+      "priceSold": 99.99,
+      "revenue": 399.96,
+      "transactionDate": "2026-06-08T17:00:21.558Z"
+    },
+    {
+      "id": "tx-65",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-06-09T17:00:21.558Z"
+    },
+    {
+      "id": "tx-66",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-06-10T17:00:21.558Z"
+    },
+    {
+      "id": "tx-67",
+      "productId": "prod-3",
+      "quantity": 3,
+      "priceSold": 99.99,
+      "revenue": 299.97,
+      "transactionDate": "2026-06-11T17:00:21.558Z"
+    },
+    {
+      "id": "tx-68",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-69",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-70",
+      "productId": "prod-3",
+      "quantity": 2,
+      "priceSold": 99.99,
+      "revenue": 199.98,
+      "transactionDate": "2026-06-14T17:00:21.558Z"
+    },
+    {
+      "id": "tx-71",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "tx-72",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 224.99,
+      "revenue": 224.99,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-73",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-05-18T17:00:21.558Z"
+    },
+    {
+      "id": "tx-74",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-05-19T17:00:21.558Z"
+    },
+    {
+      "id": "tx-75",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 224.99,
+      "revenue": 224.99,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-76",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-05-21T17:00:21.558Z"
+    },
+    {
+      "id": "tx-77",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-05-22T17:00:21.558Z"
+    },
+    {
+      "id": "tx-78",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-05-23T17:00:21.558Z"
+    },
+    {
+      "id": "tx-79",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 224.99,
+      "revenue": 224.99,
+      "transactionDate": "2026-05-24T17:00:21.558Z"
+    },
+    {
+      "id": "tx-80",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-05-25T17:00:21.558Z"
+    },
+    {
+      "id": "tx-81",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 224.99,
+      "revenue": 224.99,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-82",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-05-28T17:00:21.558Z"
+    },
+    {
+      "id": "tx-83",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-84",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "tx-85",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-06-02T17:00:21.558Z"
+    },
+    {
+      "id": "tx-86",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-06-03T17:00:21.558Z"
+    },
+    {
+      "id": "tx-87",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-06-04T17:00:21.558Z"
+    },
+    {
+      "id": "tx-88",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-06-05T17:00:21.558Z"
+    },
+    {
+      "id": "tx-89",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-06-07T17:00:21.558Z"
+    },
+    {
+      "id": "tx-90",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-06-08T17:00:21.558Z"
+    },
+    {
+      "id": "tx-91",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-06-09T17:00:21.558Z"
+    },
+    {
+      "id": "tx-92",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-06-10T17:00:21.558Z"
+    },
+    {
+      "id": "tx-93",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-06-11T17:00:21.558Z"
+    },
+    {
+      "id": "tx-94",
+      "productId": "prod-4",
+      "quantity": 1,
+      "priceSold": 249.99,
+      "revenue": 249.99,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-95",
+      "productId": "prod-4",
+      "quantity": 2,
+      "priceSold": 249.99,
+      "revenue": 499.98,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-96",
+      "productId": "prod-4",
+      "quantity": 3,
+      "priceSold": 249.99,
+      "revenue": 749.97,
+      "transactionDate": "2026-06-14T17:00:21.558Z"
+    },
+    {
+      "id": "tx-97",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-98",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-05-22T17:00:21.558Z"
+    },
+    {
+      "id": "tx-99",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-05-23T17:00:21.558Z"
+    },
+    {
+      "id": "tx-100",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-101",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-01T17:00:21.558Z"
+    },
+    {
+      "id": "tx-102",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-02T17:00:21.558Z"
+    },
+    {
+      "id": "tx-103",
+      "productId": "prod-5",
+      "quantity": 2,
+      "priceSold": 299.99,
+      "revenue": 599.98,
+      "transactionDate": "2026-06-03T17:00:21.558Z"
+    },
+    {
+      "id": "tx-104",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-07T17:00:21.558Z"
+    },
+    {
+      "id": "tx-105",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-08T17:00:21.558Z"
+    },
+    {
+      "id": "tx-106",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-10T17:00:21.558Z"
+    },
+    {
+      "id": "tx-107",
+      "productId": "prod-5",
+      "quantity": 2,
+      "priceSold": 299.99,
+      "revenue": 599.98,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-108",
+      "productId": "prod-5",
+      "quantity": 1,
+      "priceSold": 299.99,
+      "revenue": 299.99,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-109",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 314.99,
+      "revenue": 944.97,
+      "transactionDate": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "tx-110",
+      "productId": "prod-6",
+      "quantity": 1,
+      "priceSold": 314.99,
+      "revenue": 314.99,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-111",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 314.99,
+      "revenue": 629.98,
+      "transactionDate": "2026-05-18T17:00:21.558Z"
+    },
+    {
+      "id": "tx-112",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-05-19T17:00:21.558Z"
+    },
+    {
+      "id": "tx-113",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 314.99,
+      "revenue": 944.97,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-114",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-05-21T17:00:21.558Z"
+    },
+    {
+      "id": "tx-115",
+      "productId": "prod-6",
+      "quantity": 1,
+      "priceSold": 314.99,
+      "revenue": 314.99,
+      "transactionDate": "2026-05-22T17:00:21.558Z"
+    },
+    {
+      "id": "tx-116",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 349.99,
+      "revenue": 1049.97,
+      "transactionDate": "2026-05-25T17:00:21.558Z"
+    },
+    {
+      "id": "tx-117",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "tx-118",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 349.99,
+      "revenue": 1049.97,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-119",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 314.99,
+      "revenue": 944.97,
+      "transactionDate": "2026-05-29T17:00:21.558Z"
+    },
+    {
+      "id": "tx-120",
+      "productId": "prod-6",
+      "quantity": 1,
+      "priceSold": 349.99,
+      "revenue": 349.99,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-121",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-05-31T17:00:21.558Z"
+    },
+    {
+      "id": "tx-122",
+      "productId": "prod-6",
+      "quantity": 1,
+      "priceSold": 349.99,
+      "revenue": 349.99,
+      "transactionDate": "2026-06-01T17:00:21.558Z"
+    },
+    {
+      "id": "tx-123",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-03T17:00:21.558Z"
+    },
+    {
+      "id": "tx-124",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-05T17:00:21.558Z"
+    },
+    {
+      "id": "tx-125",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-06T17:00:21.558Z"
+    },
+    {
+      "id": "tx-126",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 349.99,
+      "revenue": 1049.97,
+      "transactionDate": "2026-06-07T17:00:21.558Z"
+    },
+    {
+      "id": "tx-127",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-09T17:00:21.558Z"
+    },
+    {
+      "id": "tx-128",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-10T17:00:21.558Z"
+    },
+    {
+      "id": "tx-129",
+      "productId": "prod-6",
+      "quantity": 2,
+      "priceSold": 349.99,
+      "revenue": 699.98,
+      "transactionDate": "2026-06-11T17:00:21.558Z"
+    },
+    {
+      "id": "tx-130",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 349.99,
+      "revenue": 1049.97,
+      "transactionDate": "2026-06-12T17:00:21.558Z"
+    },
+    {
+      "id": "tx-131",
+      "productId": "prod-6",
+      "quantity": 3,
+      "priceSold": 349.99,
+      "revenue": 1049.97,
+      "transactionDate": "2026-06-13T17:00:21.558Z"
+    },
+    {
+      "id": "tx-132",
+      "productId": "prod-6",
+      "quantity": 1,
+      "priceSold": 349.99,
+      "revenue": 349.99,
+      "transactionDate": "2026-06-14T17:00:21.558Z"
+    },
+    {
+      "id": "tx-133",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-05-16T17:00:21.558Z"
+    },
+    {
+      "id": "tx-134",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-05-17T17:00:21.558Z"
+    },
+    {
+      "id": "tx-135",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 35.99,
+      "revenue": 35.99,
+      "transactionDate": "2026-05-18T17:00:21.558Z"
+    },
+    {
+      "id": "tx-136",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-05-19T17:00:21.558Z"
+    },
+    {
+      "id": "tx-137",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-05-20T17:00:21.558Z"
+    },
+    {
+      "id": "tx-138",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 35.99,
+      "revenue": 35.99,
+      "transactionDate": "2026-05-22T17:00:21.558Z"
+    },
+    {
+      "id": "tx-139",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-05-23T17:00:21.558Z"
+    },
+    {
+      "id": "tx-140",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 35.99,
+      "revenue": 35.99,
+      "transactionDate": "2026-05-25T17:00:21.558Z"
+    },
+    {
+      "id": "tx-141",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-05-26T17:00:21.558Z"
+    },
+    {
+      "id": "tx-142",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-05-27T17:00:21.558Z"
+    },
+    {
+      "id": "tx-143",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-05-28T17:00:21.558Z"
+    },
+    {
+      "id": "tx-144",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-05-29T17:00:21.558Z"
+    },
+    {
+      "id": "tx-145",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-05-30T17:00:21.558Z"
+    },
+    {
+      "id": "tx-146",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-01T17:00:21.559Z"
+    },
+    {
+      "id": "tx-147",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-03T17:00:21.559Z"
+    },
+    {
+      "id": "tx-148",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-04T17:00:21.559Z"
+    },
+    {
+      "id": "tx-149",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-06T17:00:21.559Z"
+    },
+    {
+      "id": "tx-150",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-06-07T17:00:21.559Z"
+    },
+    {
+      "id": "tx-151",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-06-08T17:00:21.559Z"
+    },
+    {
+      "id": "tx-152",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-09T17:00:21.559Z"
+    },
+    {
+      "id": "tx-153",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-06-10T17:00:21.559Z"
+    },
+    {
+      "id": "tx-154",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-06-11T17:00:21.559Z"
+    },
+    {
+      "id": "tx-155",
+      "productId": "prod-7",
+      "quantity": 2,
+      "priceSold": 39.99,
+      "revenue": 79.98,
+      "transactionDate": "2026-06-12T17:00:21.559Z"
+    },
+    {
+      "id": "tx-156",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-13T17:00:21.559Z"
+    },
+    {
+      "id": "tx-157",
+      "productId": "prod-7",
+      "quantity": 1,
+      "priceSold": 39.99,
+      "revenue": 39.99,
+      "transactionDate": "2026-06-14T17:00:21.559Z"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "rec-1",
+      "productId": "prod-1",
+      "suggestedPrice": 194.99,
+      "minSuggestedPrice": 169.99,
+      "maxSuggestedPrice": 219.99,
+      "predictedDemand": 45,
+      "confidenceScore": 88,
+      "marginEstimate": 104.99,
+      "revenueEstimate": 8774.55,
+      "explanation": {
+        "factors": [
+          "MegaRetail dropped price to $189.99, leading to pricing pressure.",
+          "Inventory is low (12 units), supporting a 12% scarcity premium.",
+          "Preserves margin above 50%."
+        ],
+        "summary": "Aggressive pricing behavior by competitor A requires a slight downward adjustment to maintain volume, but low inventory buffers the descent."
+      },
+      "status": "Pending",
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    },
+    {
+      "id": "rec-2",
+      "productId": "prod-2",
+      "suggestedPrice": 44.99,
+      "minSuggestedPrice": 39.99,
+      "maxSuggestedPrice": 49.99,
+      "predictedDemand": 120,
+      "confidenceScore": 82,
+      "marginEstimate": 22.99,
+      "revenueEstimate": 5398.8,
+      "explanation": {
+        "factors": [
+          "Stock level is high (140 units), triggering 10% liquidation discount.",
+          "MegaRetail is pricing at $42.99, creating a pricing gap."
+        ],
+        "summary": "Suggesting a markdown to $44.99 to clear surplus inventory and match competitor discount levels, driving transaction velocity."
+      },
+      "status": "Pending",
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    },
+    {
+      "id": "rec-3",
+      "productId": "prod-3",
+      "suggestedPrice": 108.99,
+      "minSuggestedPrice": 99.99,
+      "maxSuggestedPrice": 119.99,
+      "predictedDemand": 85,
+      "confidenceScore": 91,
+      "marginEstimate": 63.99,
+      "revenueEstimate": 9264.15,
+      "explanation": {
+        "factors": [
+          "Summer seasonal boost of +10% is active.",
+          "Competitor price average increased by 6% to $107.50."
+        ],
+        "summary": "Upward adjustment suggested based on peak summer seasonality and rising competitor averages, maximizing capture margins."
+      },
+      "status": "Pending",
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-d7rnd7gcl",
+      "userEmail": "admin@pricepilot.com",
+      "action": "LOGIN_PASSWORD",
+      "details": "Successfully logged in via email/password credentials.",
+      "timestamp": "2026-06-15T17:00:33.274Z"
+    },
+    {
+      "id": "log-1",
+      "userEmail": "analyst@pricepilot.com",
+      "action": "UPLOAD_CATALOG",
+      "details": "Bulk catalog import completed. 7 items added/updated.",
+      "timestamp": "2026-06-10T17:00:21.559Z"
+    },
+    {
+      "id": "log-2",
+      "userEmail": "manager@pricepilot.com",
+      "action": "ACTIVATE_RULE",
+      "details": "Activated pricing rule: Stock Scarcity Premium (STOCK_SCARCITY)",
+      "timestamp": "2026-06-11T17:00:21.559Z"
+    },
+    {
+      "id": "log-3",
+      "userEmail": "admin@pricepilot.com",
+      "action": "UPDATE_PRODUCT",
+      "details": "Updated price bounds for SKU PP-EL-001 (AeroSound Pro ANC Headphones). Min: $120.00, Max: $249.99.",
+      "timestamp": "2026-06-13T17:00:21.559Z"
+    },
+    {
+      "id": "log-4",
+      "userEmail": "manager@pricepilot.com",
+      "action": "APPROVE_RECOMMENDATION",
+      "details": "Approved price recommendation for SKU PP-EL-003. Price updated from $359.99 to $349.99.",
+      "timestamp": "2026-06-14T17:00:21.559Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "title": "Competitor Price Cut Detected",
+      "message": "MegaRetail Inc. dropped the price for AeroSound Pro ANC Headphones to $189.99 (was $209.99), creating a $10.00 price deficit.",
+      "type": "competitor",
+      "isRead": false,
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    },
+    {
+      "id": "notif-2",
+      "title": "Margin Protection Alert",
+      "message": "TitanFit GPS Smartwatch margin is at 56%, but low stock premium of 12% is suggested because inventory is at 8 units.",
+      "type": "margin",
+      "isRead": false,
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    },
+    {
+      "id": "notif-3",
+      "title": "Low Inventory Warning",
+      "message": "Product \"AeroSound Pro ANC Headphones\" (PP-EL-001) has fallen below safety stock level. Current quantity: 12 units.",
+      "type": "stock",
+      "isRead": true,
+      "createdAt": "2026-06-13T17:00:21.559Z"
+    },
+    {
+      "id": "notif-4",
+      "title": "High Stock Level Alert",
+      "message": "Product \"VoltCharge Pro 100W PowerBank\" (PP-EL-002) inventory is high (140 units). Suggested markdown of 10% to speed up velocity.",
+      "type": "stock",
+      "isRead": false,
+      "createdAt": "2026-06-14T17:00:21.559Z"
+    }
+  ]
+}

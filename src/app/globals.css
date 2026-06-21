@@ -1,26 +1,729 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   THEME SYSTEM — CSS Custom Properties
+   The .dark / .light class on <html> controls which palette is active.
+   Every component uses these variables via Tailwind arbitrary values
+   or the utility classes generated below.
+   ============================================================ */
+
+/* ---------- DARK (default) ---------- */
+:root,
+.dark {
+  --pp-bg-primary:     #09090b;   /* Soft warm charcoal black canvas */
+  --pp-bg-secondary:   #121214;   /* Soft card black */
+  --pp-bg-tertiary:    #18181b;   /* Zinc-900 panel background */
+  --pp-bg-card:        rgba(18,18,20,0.85);
+  --pp-bg-hover:       #18181b;
+
+  --pp-border:         #27272a;   /* Soft zinc-800 border strokes */
+  --pp-border-hover:   #3f3f46;
+
+  --pp-text-primary:   #d4d4d8;   /* Comfortable zinc-300 white */
+  --pp-text-secondary: #a1a1aa;   /* zinc-400 */
+  --pp-text-muted:     #71717a;   /* zinc-500 */
+  --pp-text-heading:   #e4e4e7;   /* Soft zinc-200 heading white */
+
+  --pp-accent:         #2b66ff;   /* Blue branding accents */
+  --pp-accent-hover:   #1a54db;
+  --pp-accent-muted:   rgba(43,102,255,0.15);
+  --pp-accent-text:    #93c5fd;
+
+  --pp-sidebar-bg:     #09090b;
+  --pp-header-bg:      rgba(9,9,11,0.85); /* Soft translucent black header */
+  --pp-backdrop:       rgba(0,0,0,0.8);
+
+  --pp-success:        #22c55e;
+  --pp-warning:        #f59e0b;
+  --pp-danger:         #ef4444;
+
+  --pp-input-bg:       #09090b;
+  --pp-input-border:   #27272a;
+  --pp-input-text:     #d4d4d8;
+
+  --pp-table-row-hover: #18181b;
+  --pp-table-header:    #121214;
+
+  --pp-shadow:          0 4px 30px rgba(0,0,0,0.4);
+  --pp-glass:           blur(12px);
+}
+
+/* ---------- LIGHT ---------- */
+.light {
+  --pp-bg-primary:     #f4f5f6;   /* canvas grey page bg */
+  --pp-bg-secondary:   #ffffff;
+  --pp-bg-tertiary:    #e8eaed;   /* soft grey hover/input */
+  --pp-bg-card:        #ffffff;
+  --pp-bg-hover:       #f3f4f6;
+ 
+  --pp-border:         #e8eaed;   /* soft grey border */
+  --pp-border-hover:   #cbd5e1;
+ 
+  --pp-text-primary:   #0f172a;   /* slate-900 — very dark */
+  --pp-text-secondary: #475569;   /* slate-700 */
+  --pp-text-muted:     #64748b;   /* slate-500 */
+  --pp-text-heading:   #020617;   /* slate-950 — near black */
+ 
+  --pp-accent:         #2b66ff;   /* blue accent */
+  --pp-accent-hover:   #1a54db;
+  --pp-accent-muted:   rgba(43,102,255,0.10);
+  --pp-accent-text:    #1d4ed8;
+ 
+  --pp-sidebar-bg:     #ffffff;
+  --pp-header-bg:      #ffffff;
+  --pp-backdrop:        rgba(15,23,42,0.40);
+ 
+  --pp-success:        #16a34a;
+  --pp-warning:        #d97706;
+  --pp-danger:         #dc2626;
+ 
+  --pp-input-bg:       #ffffff;
+  --pp-input-border:   #e8eaed;
+  --pp-input-text:     #1e293b;
+ 
+  --pp-table-row-hover: rgba(241,245,249,0.7);
+  --pp-table-header:    #f8fafc;
+ 
+  --pp-shadow:          0 1px 3px rgba(0,0,0,0.05);
+  --pp-glass:           blur(12px);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--pp-bg-primary);
+  --color-foreground: var(--pp-text-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--pp-bg-primary);
+  color: var(--pp-text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================================
+   UTILITY CLASSES — consumed by components
+   These map CSS variables to reusable Tailwind-compatible classes.
+   ============================================================ */
+
+/* Backgrounds */
+.theme-bg-primary   { background-color: var(--pp-bg-primary)   !important; }
+.theme-bg-secondary { background-color: var(--pp-bg-secondary) !important; }
+.theme-bg-tertiary  { background-color: var(--pp-bg-tertiary)  !important; }
+.theme-bg-card      { background:       var(--pp-bg-card)      !important; }
+.theme-bg-hover:hover { background-color: var(--pp-bg-hover)   !important; }
+
+/* Text */
+.theme-text-primary   { color: var(--pp-text-primary)   !important; }
+.theme-text-secondary { color: var(--pp-text-secondary) !important; }
+.theme-text-muted     { color: var(--pp-text-muted)     !important; }
+.theme-text-heading   { color: var(--pp-text-heading)   !important; }
+
+/* Borders */
+.theme-border       { border-color: var(--pp-border)       !important; }
+.theme-border-hover:hover { border-color: var(--pp-border-hover) !important; }
+
+/* Inputs */
+.theme-input {
+  background-color: var(--pp-input-bg) !important;
+  border-color: var(--pp-input-border) !important;
+  color: var(--pp-input-text) !important;
+}
+
+/* ============================================================
+   CUSTOM ZENTRA-STYLE THEME TOGGLE
+   ============================================================ */
+.theme-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none !important;
+  overflow: visible;
+  outline: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.light .theme-toggle {
+  background-color: #dbeafe !important; /* Soft baby blue/light blue */
+}
+
+.dark .theme-toggle {
+  background-color: #121212 !important; /* Pitch black toggle bg */
+  border: 1.5px solid #2c2c2e !important; /* Fine dark grey stroke */
+}
+
+/* Active Knob Custom */
+.theme-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+
+.light .theme-toggle-knob {
+  background-color: #ffffff !important;
+  transform: translateX(0);
+}
+
+.dark .theme-toggle-knob {
+  background-color: #2c2c2e !important; /* iOS system dark grey inside knob */
+  transform: translateX(26px);
+}
+
+/* Inactive knob placeholder */
+.theme-toggle-placeholder {
+  position: absolute;
+  top: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.45);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  z-index: 5;
+}
+
+.light .theme-toggle-placeholder {
+  left: 32px;
+  opacity: 1;
+}
+
+.dark .theme-toggle-placeholder {
+  left: 6px;
+  opacity: 0;
+}
+
+/* Clouds under the toggle (for light mode) */
+.toggle-clouds {
+  position: absolute;
+  bottom: -7px;
+  left: -5px;
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+  transition: opacity 0.3s ease;
+  z-index: 15;
+}
+
+.light .toggle-clouds {
+  opacity: 1;
+  display: block;
+}
+
+.dark .toggle-clouds {
+  display: none !important;
+}
+
+.cloud {
+  position: absolute;
+  background-color: #d1d5db; /* soft grey clouds */
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.cloud-1 {
+  width: 7px;
+  height: 5px;
+  bottom: 2px;
+  left: 0px;
+}
+
+.cloud-2 {
+  width: 10px;
+  height: 7px;
+  bottom: 3px;
+  left: 4px;
+}
+
+.cloud-3 {
+  width: 8px;
+  height: 6px;
+  bottom: 1px;
+  left: 11px;
+}
+
+/* Stars next to toggle (for dark mode) */
+.toggle-stars {
+  position: absolute;
+  right: -14px;
+  top: 2px;
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+  transition: opacity 0.3s ease;
+  z-index: 15;
+}
+
+.dark .toggle-stars {
+  opacity: 1;
+  display: block;
+}
+
+.light .toggle-stars {
+  display: none !important;
+}
+
+.star {
+  position: absolute;
+  background-color: #ffffff; /* Pure white stars */
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.star-1 {
+  width: 5px;
+  height: 5px;
+  top: -6px;
+  right: 2px;
+}
+
+.star-2 {
+  width: 4px;
+  height: 4px;
+  top: 8px;
+  right: -3px;
+}
+
+.star-3 {
+  width: 6px;
+  height: 6px;
+  top: 0px;
+  right: 6px;
+}
+
+/* Smooth transition for all themed elements */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================================
+   GLASSMORPHISM NAVBAR & HEADER (iOS Style)
+   ============================================================ */
+.glass-header {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.light .glass-header {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(232, 234, 237, 0.7) !important;
+}
+
+.dark .glass-header {
+  background-color: rgba(2, 6, 23, 0.7) !important;
+  border-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.glass-nav {
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.light .glass-nav {
+  background-color: rgba(15, 23, 42, 0.05) !important; /* Soft grey/dark contrast tint */
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dark .glass-nav {
+  background-color: rgba(255, 255, 255, 0.07) !important; /* Elegant light tint for dark mode */
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.nav-active-pill {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.light .nav-active-pill {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dark .nav-active-pill {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ============================================================
+   LIGHT MODE — GLOBAL OVERRIDES
+   These remap all hardcoded Tailwind dark classes used across
+   every page component so we don't need to edit each file.
+   ============================================================ */
+
+/* --- Backgrounds --- */
+.light .bg-slate-950       { background-color: #f4f5f6 !important; }  /* canvas grey page bg */
+.light .bg-slate-950\/80   { background-color: rgba(244,245,246,0.85) !important; }
+.light .bg-slate-950\/40   { background-color: rgba(244,245,246,0.45) !important; }
+.light .bg-slate-950\/20   { background-color: #f4f5f6 !important; }
+.light .bg-slate-900       { background-color: #ffffff !important; }  /* white cards */
+.light .bg-slate-900\/60   { background-color: #ffffff !important; }
+.light .bg-slate-900\/50   { background-color: #ffffff !important; }
+.light .bg-slate-900\/40   { background-color: #ffffff !important; }
+.light .bg-slate-900\/30   { background-color: #ffffff !important; }
+.light .bg-slate-900\/20   { background-color: #f4f5f6 !important; }
+.light .bg-slate-800       { background-color: #f3f4f6 !important; }  /* soft grey */
+.light .bg-slate-800\/50   { background-color: rgba(243,244,246,0.50) !important; }
+.light .bg-slate-800\/40   { background-color: rgba(243,244,246,0.40) !important; }
+.light .bg-slate-700       { background-color: #cbd5e1 !important; }  /* medium grey border/hover */
+.light .bg-indigo-950\/40  { background-color: rgba(43,102,255,0.10) !important; }
+.light .bg-indigo-950\/20  { background-color: rgba(43,102,255,0.05) !important; }
+.light .bg-indigo-900\/40  { background-color: rgba(43,102,255,0.10) !important; }
+.light .bg-indigo-900\/20  { background-color: rgba(43,102,255,0.05) !important; }
+.light .bg-rose-950\/20    { background-color: rgba(255,241,242,0.40) !important; }
+.light .bg-amber-950\/20   { background-color: rgba(255,251,235,0.50) !important; }
+.light .bg-red-950\/40     { background-color: rgba(254,242,242,0.60) !important; }
+.light .bg-emerald-900\/30 { background-color: rgba(236,253,245,0.50) !important; }
+
+/* Force KPI icons, tags, and badges to have a solid white background in light mode */
+.light .bg-indigo-950\/60,
+.light .bg-emerald-950\/60,
+.light .bg-violet-950\/60,
+.light .bg-orange-950\/60,
+.light .bg-rose-950\/40,
+.light .bg-amber-950\/40,
+.light .bg-emerald-950\/40 {
+  background-color: #ffffff !important;
+}
+
+/* Softer borders for the warning and success badges */
+.light .border-rose-900\/20,
+.light .border-rose-800\/30 {
+  border-color: #fca5a5 !important;
+}
+.light .border-amber-900\/20,
+.light .border-amber-800\/30 {
+  border-color: #fde68a !important;
+}
+.light .border-emerald-900\/20,
+.light .border-emerald-800\/30 {
+  border-color: #a7f3d0 !important;
+}
+
+/* --- Text --- */
+.light .text-slate-100  { color: #020617 !important; }  /* slate-950 (near black) */
+.light .text-slate-200  { color: #0f172a !important; }  /* slate-900 */
+.light .text-slate-300  { color: #1e293b !important; }  /* slate-800 */
+.light .text-slate-400  { color: #334155 !important; }  /* slate-700 */
+.light .text-slate-500  { color: #475569 !important; }  /* slate-600 */
+.light .text-slate-600  { color: #64748b !important; }  /* slate-500 */
+
+/* Accent text remapped to brand blue */
+.light .text-indigo-400 { color: #1d4ed8 !important; }  /* blue-600 */
+.light .text-indigo-300 { color: #1e40af !important; }  /* blue-800 */
+
+/* --- Borders --- */
+.light .border-slate-800    { border-color: #cbd5e1 !important; }  /* light grey border */
+.light .border-slate-800\/80 { border-color: rgba(203,213,225,0.80) !important; }
+.light .border-slate-850    { border-color: #cbd5e1 !important; }
+.light .border-slate-700    { border-color: #cbd5e1 !important; }
+.light .border-slate-700\/50 { border-color: rgba(203,213,225,0.50) !important; }
+.light .border-slate-900    { border-color: #cbd5e1 !important; }
+.light .border-slate-900\/60 { border-color: rgba(203,213,225,0.60) !important; }
+.light .border-indigo-800\/40 { border-color: rgba(43,102,255,0.30) !important; }
+.light .border-indigo-900\/20 { border-color: #cbd5e1 !important; }
+.light .border-indigo-900\/40 { border-color: #cbd5e1 !important; }
+.light .border-amber-900\/30  { border-color: rgba(43,102,255,0.20) !important; }
+.light .border-red-900\/50    { border-color: rgba(220,38,38,0.20) !important; }
+.light .border-emerald-700\/50 { border-color: rgba(22,163,74,0.20) !important; }
+
+/* --- Shadows --- */
+.light .shadow-black\/50  { --tw-shadow-color: rgba(0,0,0,0.04) !important; }
+.light .shadow-black\/60  { --tw-shadow-color: rgba(0,0,0,0.06) !important; }
+.light .shadow-indigo-600\/10 { --tw-shadow-color: rgba(43,102,255,0.04) !important; }
+.light .shadow-indigo-500\/20 { --tw-shadow-color: rgba(43,102,255,0.06) !important; }
+.light .shadow-indigo-900\/5  { --tw-shadow-color: rgba(43,102,255,0.02) !important; }
+
+/* --- Gradients --- */
+.light .bg-gradient-to-r.from-white.to-slate-300 {
+  --tw-gradient-from: #0f172a !important;
+  --tw-gradient-to: #334155 !important;
+}
+
+/* --- Placeholder text --- */
+.light .placeholder-slate-600::placeholder { color: #94a3b8 !important; }
+.light .placeholder-slate-500::placeholder { color: #94a3b8 !important; }
+
+/* --- Hover overrides --- */
+.light .hover\:bg-slate-800:hover         { background-color: #f3f4f6 !important; }
+.light .hover\:bg-slate-800\/50:hover     { background-color: rgba(243,244,246,0.55) !important; }
+.light .hover\:bg-slate-600:hover         { background-color: #cbd5e1 !important; }
+.light .hover\:text-slate-200:hover       { color: #020617 !important; }
+.light .hover\:text-slate-100:hover       { color: #020617 !important; }
+.light .hover\:border-slate-700:hover     { border-color: #cbd5e1 !important; }
+.light .hover\:border-slate-600:hover     { border-color: #cbd5e1 !important; }
+.light .hover\:border-indigo-900\/40:hover { border-color: rgba(43,102,255,0.40) !important; }
+
+/* --- Focus overrides --- */
+.light .focus\:border-indigo-600:focus    { border-color: #1d4ed8 !important; }
+
+/* --- Scrollbar for light mode --- */
+.light ::-webkit-scrollbar-track { background: #f4f5f6; }
+.light ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.light ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* --- Table rows --- */
+.light tr:hover td { background-color: rgba(243,244,246,0.50) !important; }
+
+/* --- Charts / recharts --- */
+.light .recharts-cartesian-grid line { stroke: #e8eaed !important; }
+.light .recharts-text { fill: #475569 !important; }
+
+/* --- Headings --- */
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: #020617 !important;
+}
+
+/* --- Competitor Detail Panels & Card Components --- */
+.light .bg-slate-950\/30 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.light .bg-slate-900\/10,
+.light .bg-slate-900\/30 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.light .bg-slate-950\/40 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* --- Sync Buttons --- */
+.light .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.light .bg-slate-900\/60:hover {
+  background-color: #f1f5f9 !important;
+}
+.light button.bg-slate-950\/30 {
+  color: #ea580c !important;
+}
+.light button.bg-slate-950\/30:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* --- Find Competitors Button (White & Green) --- */
+.light .bg-emerald-950\/40 {
+  background-color: #ffffff !important;
+  color: #16a34a !important; /* green-600 */
+  border-color: #86efac !important; /* green-300 */
+}
+.light .bg-emerald-950\/40:hover {
+  background-color: #f0fdf4 !important; /* green-50 */
+  border-color: #4ade80 !important; /* green-400 */
+}
+
+/* --- Feed Delete Button --- */
+.light .feed-delete-btn {
+  background-color: #ffffff !important;
+  color: #dc2626 !important; /* red-600 */
+  border-color: #fca5a5 !important; /* red-300 */
+}
+.light .feed-delete-btn:hover {
+  background-color: #fef2f2 !important; /* red-50 */
+  border-color: #f87171 !important; /* red-400 */
+}
+
+/* --- SKU Tags --- */
+.light .sku-tag {
+  background-color: #ffffff !important;
+  color: #475569 !important; /* slate-600 */
+  border: 1px solid #cbd5e1 !important; /* light slate border */
+}
+
+/* ============================================================
+   DARK MODE — GLOBAL OVERRIDES
+   These remap Tailwind's default blue-ish slate and indigo classes
+   to zinc/black shades to eliminate all blue shades.
+   ============================================================ */
+
+/* --- Backgrounds --- */
+.dark .bg-slate-950       { background-color: #09090b !important; }  /* zinc-950 (warm black) */
+.dark .bg-slate-950\/80   { background-color: rgba(9,9,11,0.85) !important; }
+.dark .bg-slate-950\/40   { background-color: rgba(9,9,11,0.45) !important; }
+.dark .bg-slate-950\/20   { background-color: rgba(9,9,11,0.20) !important; }
+.dark .bg-slate-900       { background-color: #121214 !important; }  /* zinc-900 (soft black cards) */
+.dark .bg-slate-900\/60   { background-color: rgba(18,18,20,0.60) !important; }
+.dark .bg-slate-900\/50   { background-color: rgba(18,18,20,0.50) !important; }
+.dark .bg-slate-900\/40   { background-color: rgba(18,18,20,0.45) !important; }
+.dark .bg-slate-900\/30   { background-color: rgba(18,18,20,0.30) !important; }
+.dark .bg-slate-900\/20   { background-color: rgba(18,18,20,0.20) !important; }
+.dark .bg-slate-900\/10   { background-color: rgba(18,18,20,0.10) !important; }
+.dark .bg-slate-800       { background-color: #18181b !important; }  /* zinc-800 (input/hover) */
+.dark .bg-slate-800\/50   { background-color: rgba(24,24,27,0.50) !important; }
+.dark .bg-slate-800\/40   { background-color: rgba(24,24,27,0.40) !important; }
+.dark .bg-slate-700       { background-color: #27272a !important; }
+
+/* Custom remapping of indigo blue backgrounds to blue accents */
+.dark .bg-indigo-600       { background-color: #2b66ff !important; }  /* Blue active button */
+.dark .hover\:bg-indigo-500:hover { background-color: #1a54db !important; }
+.dark .bg-indigo-950\/40   { background-color: rgba(43,102,255,0.15) !important; }
+.dark .bg-indigo-950\/20   { background-color: rgba(43,102,255,0.08) !important; }
+.dark .bg-indigo-950\/60   { background-color: rgba(43,102,255,0.20) !important; }
+.dark .bg-violet-950\/60   { background-color: rgba(43,102,255,0.15) !important; }
+
+/* --- Borders --- */
+.dark .border-slate-800      { border-color: #27272a !important; }  /* Softer stroke */
+.dark .border-slate-800\/80  { border-color: rgba(39,39,42,0.80) !important; }
+.dark .border-slate-850      { border-color: #27272a !important; }
+.dark .border-slate-700      { border-color: #27272a !important; }
+.dark .border-slate-700\/50  { border-color: rgba(39,39,42,0.50) !important; }
+.dark .border-slate-900      { border-color: #121214 !important; }
+.dark .border-slate-900\/60  { border-color: rgba(18,18,20,0.60) !important; }
+.dark .border-indigo-900\/30 { border-color: rgba(43,102,255,0.20) !important; }
+.dark .border-violet-900\/30 { border-color: rgba(43,102,255,0.20) !important; }
+
+/* --- Text overrides --- */
+.dark .text-indigo-400       { color: #93c5fd !important; }  /* blue-300 active text */
+.dark .text-indigo-300       { color: #2b66ff !important; }  /* blue-500 */
+.dark .text-violet-400       { color: #93c5fd !important; }
+
+/* --- Hover overrides --- */
+.dark .hover\:bg-slate-800:hover     { background-color: #18181b !important; }
+.dark .hover\:bg-slate-800\/50:hover { background-color: rgba(24,24,27,0.55) !important; }
+.dark .hover\:border-slate-700:hover { border-color: #3f3f46 !important; }
+
+/* --- Charts grid --- */
+.dark .recharts-cartesian-grid line { stroke: #27272a !important; }
+
+/* --- Scrollbar --- */
+.dark ::-webkit-scrollbar-track { background: #09090b; }
+.dark ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+/* --- Table rows --- */
+.dark tr:hover td { background-color: rgba(24,24,27,0.45) !important; }
+
+/* --- Competitor Detail Panels & Card Components --- */
+.dark .bg-slate-950\/30 {
+  background-color: #000000 !important;
+  border-color: #27272a !important;
+}
+.dark .bg-slate-900\/10,
+.dark .bg-slate-900\/30 {
+  background-color: #121214 !important;
+  border-color: #27272a !important;
+}
+.dark .bg-slate-950\/40 {
+  background-color: #09090b !important;
+  border-color: #27272a !important;
+}
+
+/* Light mode specific border overrides */
+.light .border-indigo-900\/30 {
+  border-color: rgba(43,102,255,0.2) !important;
+}
+
+/* ============================================================
+   CUSTOM RANGE INPUT (SLIDER) STYLING
+   ============================================================ */
+/* Webkit Browsers */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #cbd5e1 !important; /* more visible light gray track */
+  height: 6px;
+  border-radius: 9999px;
+}
+
+.dark input[type="range"]::-webkit-slider-runnable-track {
+  background: #27272a !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  background-color: #2b66ff !important;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-track {
+  background: #cbd5e1 !important;
+  height: 6px;
+  border-radius: 9999px;
+}
+
+.dark input[type="range"]::-moz-range-track {
+  background: #27272a !important;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background-color: #2b66ff !important;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+/* Hover effects */
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Custom overrides for Audit Trail stats cards */
+.audit-stats-icon-approved {
+  background-color: rgba(6, 78, 59, 0.4) !important; /* emerald-950/40 equivalent */
+}
+.light .audit-stats-icon-approved {
+  background-color: #ffffff !important; /* solid white */
+}
+
+.audit-stats-icon-rejected {
+  background-color: rgba(136, 19, 55, 0.4) !important; /* rose-950/40 equivalent */
+}
+.light .audit-stats-icon-rejected {
+  background-color: #ffffff !important; /* solid white */
+}
+
+.audit-stats-count {
+  color: #ffffff !important;
+}
+.light .audit-stats-count {
+  color: #000000 !important;
+}
+

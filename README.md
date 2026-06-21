@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PricePilot - Enterprise Pricing Intelligence Dashboard
 
-## Getting Started
+PricePilot is an enterprise-grade full-stack SaaS application designed for pricing analysts, product managers, and business owners. It provides automated demand forecasting, competitor tracking, margins protection rules, and role-based recommendation approval workflows.
 
-First, run the development server:
+---
 
+## Technical Stack
+- **Frontend**: React 18+ (Next.js 14+ App Router), TypeScript, Tailwind CSS, Recharts, Framer Motion, Lucide Icons.
+- **Backend**: Next.js Serverless API routes (with service/controller structure), JSONWebToken session handling.
+- **Database**: PostgreSQL (via Supabase) with automatic sandbox fallback to a local JSON file (`src/data/local_db.json`) for zero-setup execution.
+
+---
+
+## Quick Start (Local Setup)
+
+### 1. Install Dependencies
+Run the following command at the root of the project to install all package requirements:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Start the Development Server
+Launch the development server:
+```bash
+npm run dev
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+> [!TIP]
+> **Real-time Role Switcher**: A dropdown is embedded in the header menu bar during development mode. It allows you to toggle the active session role with a single click to easily test different user perspectives without logging out and back in.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Production Database: Supabase Setup
 
-## Deploy on Vercel
+To switch from the local JSON database sandbox to a live PostgreSQL production database:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Deploy DDL Tables**: Execute the SQL DDL commands inside **[schema.sql](file:///c:/Users/Lenovo/Desktop/PricePilot/schema.sql)** in the Supabase SQL editor.
+2. **Configure Environment Variables**: Create a `.env.local` file at the root of the project and populate the keys:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-string
+   JWT_SECRET=pricepilot-secure-key-string
+   ```
+   *Note: If these credentials are blank, PricePilot automatically falls back to local file storage, preserving database edits across page reloads.*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Key Features
+
+1. **Demand Forecasting (Price Elasticity)**: Measures sales trends using a coefficient of demand elasticity ($\epsilon = -1.5$). Simulating price adjustments projects corresponding units volume shifts and revenue variances.
+2. **Rules Engine Optimization**: Adjust parameters for:
+   - *Absolute Minimum Margin Floor*: Clamps final price suggestions to protect margin floors.
+   - *Competitor Corridor*: Restricts prices from exceeding or under-cutting competitor averages.
+   - *Stock Scarcity Premium / High Stock Markdown*: Automatically adjusts suggestions based on stock pressure.
+   - *Seasonal Peak Boost*: Applies peak/off-peak adjustments based on current date.
+3. **Competitor Intelligence Feed**: Compares prices side-by-side and draws historical pricing sparklines. Tapping **Sync Market** in the header simulates an automated scraper feed and triggers notifications if competitors under-cut our price.
+4. **Audit Logs Trail**: Complete system logging of logins, rule updates, approvals, and catalog changes.

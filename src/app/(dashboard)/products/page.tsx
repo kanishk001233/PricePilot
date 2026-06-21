@@ -1,0 +1,980 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, 
+  Upload, 
+  Search, 
+  Filter, 
+  Edit, 
+  Trash, 
+  Download, 
+  X, 
+  AlertTriangle,
+  Info,
+  DollarSign,
+  Package,
+  Layers,
+  ChevronRight,
+  RefreshCw
+} from 'lucide-react';
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string>('Viewer');
+  
+  // Search & Filter State
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  
+  // Modals state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDesc, setNewCategoryDesc] = useState('');
+  const [categoryError, setCategoryError] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [creatingProduct, setCreatingProduct] = useState(false);
+  const [importing, setImporting] = useState(false);
+
+  
+  // Form values
+  const [sku, setSku] = useState('');
+  const [name, setName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [brand, setBrand] = useState('');
+  const [costPrice, setCostPrice] = useState(0);
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(0);
+  const [targetMargin, setTargetMargin] = useState(30);
+  const [inventory, setInventory] = useState(0);
+  const [seasonalRelevance, setSeasonalRelevance] = useState('All Year');
+  const [customCategory, setCustomCategory] = useState('');
+
+  // Fetch products and categories
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch user role first
+      const meRes = await fetch('/api/auth/me');
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setUserRole(meData.user.role);
+      }
+
+      const prodRes = await fetch('/api/products');
+      const catRes = await fetch('/api/categories');
+      
+      if (prodRes.ok) {
+        const prodData = await prodRes.json();
+        setProducts(prodData);
+      }
+
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        setCategories(catData);
+        if (catData.length > 0) {
+          setCategoryId(catData[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching catalog data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (creatingProduct) return;
+    setCreatingProduct(true);
+
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sku, 
+          name, 
+          categoryId, 
+          brand, 
+          costPrice, 
+          currentPrice, 
+          minPrice, 
+          maxPrice, 
+          targetMargin, 
+          inventory, 
+          seasonalRelevance,
+          categoryName: categoryId === 'new' ? customCategory : undefined
+        })
+      });
+      
+      if (res.ok) {
+        setShowAddModal(false);
+        fetchData();
+        resetForm();
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Create product error:', err);
+    } finally {
+      setCreatingProduct(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+    
+    try {
+      const res = await fetch(`/api/products/${selectedProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sku, 
+          name, 
+          categoryId, 
+          brand, 
+          costPrice, 
+          currentPrice, 
+          minPrice, 
+          maxPrice, 
+          targetMargin, 
+          inventory, 
+          seasonalRelevance,
+          categoryName: categoryId === 'new' ? customCategory : undefined
+        })
+      });
+      if (res.ok) {
+        setShowEditModal(false);
+        fetchData();
+        resetForm();
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Update product error:', err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product? All related snapshots will be lost.')) return;
+    
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Delete product error:', err);
+    }
+  };
+
+  // CSV Import parser simulation
+  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      if (!text) {
+        setImporting(false);
+        return;
+      }
+
+      const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+      const headers = rows[0].split(',').map(h => h.trim());
+      
+      const parsedData = rows.slice(1).map(row => {
+        // Split with care of commas
+        const cols = row.split(',').map(c => c.trim());
+        const obj: Record<string, any> = {};
+        headers.forEach((header, index) => {
+          obj[header] = cols[index];
+        });
+        return obj;
+      }).filter(item => {
+        return (item.sku && item.sku.trim() !== '') || (item.name && item.name.trim() !== '');
+      });
+
+      // Send to server in bulk
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsedData)
+        });
+
+        if (res.ok) {
+          alert(`CSV imported successfully! Background competitor matching initiated.`);
+          fetchData();
+        } else {
+          const data = await res.json();
+          alert(`CSV upload failed: ${data.error}`);
+        }
+      } catch (err) {
+        console.error('Error uploading CSV:', err);
+      } finally {
+        setImporting(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const downloadSampleCSV = () => {
+    const headers = 'sku,name,brand,categoryName,costPrice,currentPrice,minPrice,maxPrice,targetMargin,inventory,seasonalRelevance\n';
+    const row1 = 'PP-SAMPLE-1,Wireless Keyboard,AeroLogix,Consumer Electronics,20.00,49.99,35.00,89.00,45,25,All Year\n';
+    const row2 = 'PP-SAMPLE-2,Smart Air Fryer,BakeFast,Home Appliances,40.00,99.99,75.00,149.00,40,4,All Year\n';
+    
+    const blob = new Blob([headers + row1 + row2], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'pricepilot_catalog_template.csv');
+    a.click();
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setShowAddModal(true);
+  };
+
+  const openEditModal = (product: any) => {
+    setSelectedProduct(product);
+    setSku(product.sku);
+    setName(product.name);
+    setCategoryId(product.categoryId);
+    setCustomCategory('');
+    setBrand(product.brand);
+    setCostPrice(product.costPrice);
+    setCurrentPrice(product.currentPrice);
+    setMinPrice(product.minPrice);
+    setMaxPrice(product.maxPrice);
+    setTargetMargin(product.targetMargin);
+    setInventory(product.inventory);
+    setSeasonalRelevance(product.seasonalRelevance);
+    setShowEditModal(true);
+  };
+
+  const resetForm = () => {
+    setSelectedProduct(null);
+    setSku('');
+    setName('');
+    if (categories.length > 0) {
+      setCategoryId(categories[0].id);
+    } else {
+      setCategoryId('');
+    }
+    setCustomCategory('');
+    setBrand('');
+    setCostPrice(0);
+    setCurrentPrice(0);
+    setMinPrice(0);
+    setMaxPrice(0);
+    setTargetMargin(30);
+    setInventory(0);
+    setSeasonalRelevance('All Year');
+  };
+
+  // Filter products locally for searchability
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
+    const matchesStatus = selectedStatus === 'all' || p.status === selectedStatus;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const isViewer = userRole === 'Viewer';
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      
+      {/* Title */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">Catalog Management</h1>
+          <p className="text-slate-400 text-sm mt-0.5">Edit boundaries, track target margins, and review product statuses.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {/* CSV Import */}
+          <div className="relative">
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleCSVImport}
+              disabled={isViewer || importing}
+              id="csv-file-input"
+              className="hidden"
+            />
+            <label
+              htmlFor={importing || isViewer ? undefined : "csv-file-input"}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-xs font-semibold text-slate-300 transition-all cursor-pointer ${
+                isViewer || importing ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <Upload className={`w-3.5 h-3.5 ${importing ? 'animate-spin' : ''}`} />
+              <span>{importing ? 'Importing...' : 'Import CSV'}</span>
+            </label>
+          </div>
+
+          <button
+            onClick={downloadSampleCSV}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition-all"
+            title="Download CSV Template"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Template</span>
+          </button>
+
+          {/* Add Category Button */}
+          <button
+            onClick={() => setShowCategoryModal(true)}
+            disabled={isViewer}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-700/50 bg-emerald-900/30 hover:bg-emerald-800/40 text-emerald-300 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            title="Add New Category"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Category</span>
+          </button>
+
+          {/* Add Product Button */}
+          <button
+            onClick={openAddModal}
+            disabled={isViewer}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Product</span>
+          </button>
+        </div>
+      </div>
+
+      {isViewer && (
+        <div className="p-3.5 rounded-xl border border-amber-900/30 bg-amber-950/20 flex gap-2.5 items-start text-xs text-amber-300 text-left">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>You are logged in with read-only Viewer privileges. Adding, updating, or importing catalogs is restricted. Switch roles in the top navbar to modify data.</span>
+        </div>
+      )}
+
+      {/* Search & Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 rounded-2xl border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl">
+        <div className="sm:col-span-6 relative">
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search by name or SKU..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-600 focus:border-indigo-600 focus:outline-none transition-all"
+          />
+        </div>
+
+        <div className="sm:col-span-3 flex items-center gap-2">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+          >
+            <option value="all">All Categories</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sm:col-span-3">
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+          >
+            <option value="all">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Draft">Draft</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Catalog Table */}
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+        {loading ? (
+          <div className="py-24 text-center">
+            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-3 text-slate-500 text-xs">Fetching catalog items...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-20 text-center text-slate-500 space-y-2">
+            <Package className="w-10 h-10 mx-auto text-slate-700" />
+            <p className="text-xs font-semibold">No products found</p>
+            <p className="text-[11px] text-slate-600">Try adjusting your filters or importing items via CSV.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
+                  <th className="px-6 py-4 font-semibold">SKU / Product Info</th>
+                  <th className="px-6 py-4 font-semibold">Brand</th>
+                  <th className="px-6 py-4 font-semibold text-right">Cost Price</th>
+                  <th className="px-6 py-4 font-semibold text-right">Selling Price</th>
+                  <th className="px-6 py-4 font-semibold text-right">Price Boundaries (Min / Max)</th>
+                  <th className="px-6 py-4 font-semibold text-right">Target Margin</th>
+                  <th className="px-6 py-4 font-semibold text-center">Stock</th>
+                  <th className="px-6 py-4 font-semibold text-center">Status</th>
+                  {!isViewer && <th className="px-6 py-4 font-semibold text-right">Actions</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {filteredProducts.map((p) => {
+                  const currentMargin = Math.round(((p.currentPrice - p.costPrice) / p.currentPrice) * 100);
+                  
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-900/10 transition-colors group">
+                      {/* SKU / Name */}
+                      <td className="px-6 py-4">
+                        <span className="text-[10px] font-bold text-slate-500 block mb-0.5">{p.sku}</span>
+                        <div className="font-semibold text-slate-200">{p.name}</div>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">{p.categoryName}</span>
+                      </td>
+
+                      {/* Brand */}
+                      <td className="px-6 py-4 text-slate-400">{p.brand}</td>
+
+                      {/* Cost price */}
+                      <td className="px-6 py-4 text-right text-slate-300">₹{p.costPrice.toFixed(2)}</td>
+
+                      {/* Selling price */}
+                      <td className="px-6 py-4 text-right font-black text-indigo-400">₹{p.currentPrice.toFixed(2)}</td>
+
+                      {/* Bounds */}
+                      <td className="px-6 py-4 text-right text-slate-400">
+                        ₹{p.minPrice.toFixed(2)} - ₹{p.maxPrice.toFixed(2)}
+                      </td>
+
+                      {/* Target Margin */}
+                      <td className="px-6 py-4 text-right">
+                        <span className="font-semibold text-slate-200">{p.targetMargin}%</span>
+                        <span className={`text-[10px] block mt-0.5 ${currentMargin >= p.targetMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          (Actual: {currentMargin}%)
+                        </span>
+                      </td>
+
+                      {/* Stock */}
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
+                          p.inventory < 15 
+                            ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20 animate-pulse' 
+                            : 'bg-slate-800 text-slate-300'
+                        }`}>
+                          {p.inventory}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded-full font-bold text-[9px] ${
+                          p.status === 'Active' 
+                            ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/20' 
+                            : p.status === 'Draft' 
+                              ? 'bg-amber-950/40 text-amber-400 border border-amber-900/20' 
+                              : 'bg-slate-850 text-slate-500'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      {!isViewer && (
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => openEditModal(p)}
+                              className="p-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 text-indigo-400 hover:text-indigo-300 transition-all"
+                              title="Edit product bounds"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(p.id)}
+                              className="p-1.5 rounded-lg border border-slate-800 hover:border-rose-900 bg-slate-950/30 text-rose-400 hover:text-rose-300 transition-all"
+                              title="Delete product"
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="text-base font-bold text-white">Add Product to Catalog</h3>
+              <button onClick={() => setShowAddModal(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Product SKU</label>
+                  <input
+                    type="text"
+                    required
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    placeholder="PP-EL-004"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="SmartWatch Plus"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Brand</label>
+                  <input
+                    type="text"
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    placeholder="BrandName"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Category</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+                  >
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                    <option value="new">+ Add New Category...</option>
+                  </select>
+                </div>
+
+                {categoryId === 'new' && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">New Category Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="e.g. Beverages, Apparel"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Cost Price (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={costPrice || ''}
+                    onChange={(e) => setCostPrice(Number(e.target.value))}
+                    placeholder="0.00"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Current Selling Price (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={currentPrice || ''}
+                    onChange={(e) => setCurrentPrice(Number(e.target.value))}
+                    placeholder="0.00"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Minimum Price Boundary (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={minPrice || ''}
+                    onChange={(e) => setMinPrice(Number(e.target.value))}
+                    placeholder="Floor boundary"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Maximum Price Boundary (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={maxPrice || ''}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    placeholder="Ceiling boundary"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Target Margin (%)</label>
+                  <input
+                    type="number"
+                    value={targetMargin}
+                    onChange={(e) => setTargetMargin(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Inventory Quantity</label>
+                  <input
+                    type="number"
+                    value={inventory}
+                    onChange={(e) => setInventory(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Seasonal Profile</label>
+                  <select
+                    value={seasonalRelevance}
+                    onChange={(e) => setSeasonalRelevance(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+                  >
+                    <option value="All Year">All Year</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Fall">Fall</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  disabled={creatingProduct}
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-xs rounded-xl border border-slate-850 bg-slate-950/40 text-slate-400 hover:text-slate-200 disabled:opacity-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingProduct}
+                  className="px-4 py-2 text-xs rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold disabled:opacity-50 transition-all"
+                >
+                  Add Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Category Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="text-base font-bold text-white">Add New Category</h3>
+              <button onClick={() => { setShowCategoryModal(false); setCategoryError(''); }} className="p-1 rounded hover:bg-slate-800 text-slate-400">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {categoryError && (
+              <div className="p-2.5 rounded-lg bg-red-950/40 border border-red-900/50 text-xs text-red-300">
+                {categoryError}
+              </div>
+            )}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newCategoryName.trim()) return;
+                setCategoryError('');
+                try {
+                  const res = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: newCategoryName.trim(),
+                      description: newCategoryDesc.trim() || null
+                    })
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    setShowCategoryModal(false);
+                    setNewCategoryName('');
+                    setNewCategoryDesc('');
+                    setCategoryError('');
+                    fetchData();
+                  } else {
+                    setCategoryError(data.error || 'Failed to create category');
+                  }
+                } catch (err: any) {
+                  console.error('Create category error:', err);
+                  setCategoryError('Network error. Please try again.');
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Category Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g. Beverages, Apparel, Home Decor"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-600 transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Description (optional)</label>
+                <input
+                  type="text"
+                  value={newCategoryDesc}
+                  onChange={(e) => setNewCategoryDesc(e.target.value)}
+                  placeholder="e.g. Clothing, footwear, and fashion accessories"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-600 transition-all"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => { setShowCategoryModal(false); setCategoryError(''); }}
+                  className="px-4 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 text-xs rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all">
+                  Add Category
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Modal */}
+      {showEditModal && selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="text-base font-bold text-white">Update Product Boundaries & Cost</h3>
+              <button onClick={() => setShowEditModal(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEdit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Product SKU</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={sku}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-500 cursor-not-allowed focus:outline-none"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Brand</label>
+                  <input
+                    type="text"
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Category</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+                  >
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                    <option value="new">+ Add New Category...</option>
+                  </select>
+                </div>
+
+                {categoryId === 'new' && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">New Category Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="e.g. Beverages, Apparel"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Cost Price (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={costPrice}
+                    onChange={(e) => setCostPrice(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Current Selling Price (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={currentPrice}
+                    onChange={(e) => setCurrentPrice(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Minimum Price Boundary (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Maximum Price Boundary (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Target Margin (%)</label>
+                  <input
+                    type="number"
+                    value={targetMargin}
+                    onChange={(e) => setTargetMargin(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Inventory Quantity</label>
+                  <input
+                    type="number"
+                    value={inventory}
+                    onChange={(e) => setInventory(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Seasonal Profile</label>
+                  <select
+                    value={seasonalRelevance}
+                    onChange={(e) => setSeasonalRelevance(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
+                  >
+                    <option value="All Year">All Year</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Fall">Fall</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-xs rounded-xl border border-slate-850 bg-slate-950/40 text-slate-400 hover:text-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+
+    </div>
+  );
+}
