@@ -16,6 +16,24 @@ export interface CompetitorUrls {
 
 export const ScraperService = {
   /**
+   * Launch a local browser or connect to Browserless.io remote browser service in production.
+   */
+  launchBrowserInstance: async function(): Promise<any> {
+    const { chromium } = await import('playwright');
+    if (process.env.BROWSERLESS_API_KEY) {
+      console.log(`[Dispatcher] Connecting to Browserless.io remote browser...`);
+      return await chromium.connectOverCDP(
+        `wss://chrome.browserless.io?token=${process.env.BROWSERLESS_API_KEY}`
+      );
+    }
+    console.log(`[Dispatcher] Launching local Chromium browser...`);
+    return await chromium.launch({
+      headless: true,
+      args: ['--disable-blink-features=AutomationControlled']
+    });
+  },
+
+  /**
    * Generate a simplified, generalized search query (e.g. brand + model)
    * by stripping out specific storage sizes, RAM details, and generic clutter.
    */
@@ -165,11 +183,7 @@ export const ScraperService = {
 
     const getOrLaunchBrowser = async () => {
       if (!browser) {
-        const { chromium } = await import('playwright');
-        browser = await chromium.launch({
-          headless: true,
-          args: ['--disable-blink-features=AutomationControlled']
-        });
+        browser = await this.launchBrowserInstance();
         shouldCloseBrowser = true;
       }
       return browser;
@@ -1153,11 +1167,7 @@ export const ScraperService = {
     let shouldCloseBrowser = false;
     try {
       if (!browser) {
-        const { chromium } = await import('playwright');
-        browser = await chromium.launch({
-          headless: true,
-          args: ['--disable-blink-features=AutomationControlled']
-        });
+        browser = await this.launchBrowserInstance();
         shouldCloseBrowser = true;
       }
       const context = await browser.newContext({
@@ -1228,11 +1238,7 @@ export const ScraperService = {
     
     try {
       if (!browser) {
-        const { chromium } = await import('playwright');
-        browser = await chromium.launch({
-          headless: true,
-          args: ['--disable-blink-features=AutomationControlled']
-        });
+        browser = await this.launchBrowserInstance();
         shouldCloseBrowser = true;
       }
 
