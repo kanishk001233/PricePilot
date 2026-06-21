@@ -217,11 +217,8 @@ export async function POST(req: NextRequest) {
 
         let browser: any = null;
         try {
-          const { chromium } = await import('playwright');
-          browser = await chromium.launch({
-            headless: true,
-            args: ['--disable-blink-features=AutomationControlled']
-          });
+          const { ScraperService } = await import('@/services/ScraperService');
+          browser = await ScraperService.launchBrowserInstance();
         } catch (launchErr: any) {
           console.error('[Matching] [Background-Bulk] Failed to launch Playwright browser:', launchErr.message);
         }
@@ -320,11 +317,8 @@ export async function POST(req: NextRequest) {
         if (competitors.length > 0) {
           console.log(`[Matching] [Background] Running competitor matching for product ${newProduct.sku}...`);
           try {
-            const { chromium } = await import('playwright');
-            browser = await chromium.launch({
-              headless: true,
-              args: ['--disable-blink-features=AutomationControlled']
-            });
+            const { ScraperService } = await import('@/services/ScraperService');
+            browser = await ScraperService.launchBrowserInstance();
           } catch (launchErr: any) {
             console.error('[Matching] [Background] Failed to launch Playwright browser:', launchErr.message);
           }

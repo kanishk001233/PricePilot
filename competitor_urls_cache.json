@@ -398,17 +398,17 @@
     "reliance": null,
     "vijaysales": null
   },
-  "apple iphone 16 pro": {
-    "amazon": null,
-    "flipkart": "https://www.flipkart.com/apple-iphone-16-pro-natural-titanium-256-gb/p/itm8d07958e8b89e",
-    "croma": null,
-    "reliance": "https://www.reliancedigital.in/product/apple-iphone-16-pro-256-gb-black-titanium-m0xrrg-8590260",
-    "vijaysales": null
-  },
   "iphone 17": {
     "amazon": "https://www.amazon.in/dp/B07BQMJ6V6",
     "flipkart": "https://www.flipkart.com/apple-iphone-17-white-256-gb/p/itmf98e89534d806",
     "croma": "https://www.croma.com/apple-iphone-17-256gb-black-/p/317396",
+    "reliance": null,
+    "vijaysales": null
+  },
+  "apple iphone 16 pro": {
+    "amazon": null,
+    "flipkart": "https://www.flipkart.com/apple-iphone-16-pro-white-titanium-256-gb/p/itm35f749ba5d1ea",
+    "croma": null,
     "reliance": null,
     "vijaysales": null
   }

@@ -90,11 +90,7 @@ export async function POST(req: NextRequest) {
     let browser: any = null;
     const { ScraperService } = await import('@/services/ScraperService');
     try {
-      const { chromium } = await import('playwright');
-      browser = await chromium.launch({
-        headless: true,
-        args: ['--disable-blink-features=AutomationControlled']
-      });
+      browser = await ScraperService.launchBrowserInstance();
     } catch (launchErr: any) {
       console.error('[Sync] Failed to launch Playwright browser:', launchErr.message);
     }
