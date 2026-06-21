@@ -43,7 +43,7 @@ export default function AuthCallbackPage() {
         if (res.ok) {
           const syncData = await res.json();
           if (syncData.success) {
-            router.push('/dashboard');
+            router.push('/home');
           } else {
             router.push(`/login?error=${encodeURIComponent(syncData.error || 'Session synchronization error')}`);
           }

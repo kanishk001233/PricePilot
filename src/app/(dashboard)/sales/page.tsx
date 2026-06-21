@@ -23,6 +23,8 @@ export default function SalesPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadedPages, setLoadedPages] = useState<number[]>([1]);
+  const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
   const pageSize = 10;
 
   const fetchSalesLogs = async () => {
@@ -87,6 +89,7 @@ export default function SalesPage() {
   // Reset to page 1 on search filter change
   useEffect(() => {
     setCurrentPage(1);
+    setLoadedPages([1]);
   }, [searchQuery]);
 
   // Calculate gross sales metrics (excluding returned items)
@@ -95,6 +98,31 @@ export default function SalesPage() {
 
   // Pagination calculation
   const totalPages = Math.ceil(filteredSales.length / pageSize) || 1;
+
+  // Background preload next page
+  useEffect(() => {
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages && !loadedPages.includes(nextPage)) {
+      const timer = setTimeout(() => {
+        setLoadedPages((prev) => [...prev, nextPage]);
+      }, 500); // 500ms background prefetch simulation
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, totalPages, loadedPages]);
+
+  const handlePageChange = (newPage: number) => {
+    if (loadedPages.includes(newPage)) {
+      setCurrentPage(newPage);
+    } else {
+      setPageTransitionLoading(true);
+      setTimeout(() => {
+        setLoadedPages((prev) => [...prev, newPage]);
+        setCurrentPage(newPage);
+        setPageTransitionLoading(false);
+      }, 350); // 350ms loading UI fallback
+    }
+  };
+
   const paginatedSales = filteredSales.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
@@ -110,7 +138,7 @@ export default function SalesPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 flex items-center gap-4 shadow-sm">
           <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30">
             <ShoppingBag className="w-6 h-6" />
           </div>
@@ -120,7 +148,7 @@ export default function SalesPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 flex items-center gap-4 shadow-sm">
           <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
             <DollarSign className="w-6 h-6" />
           </div>
@@ -132,7 +160,7 @@ export default function SalesPage() {
       </div>
 
       {/* Main logs container */}
-      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-6 shadow-sm space-y-4">
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="text-left">
             <h3 className="text-base font-bold text-slate-800 dark:text-white">Transactions Feed</h3>
@@ -145,20 +173,30 @@ export default function SalesPage() {
               placeholder="Search by customer, SKU or cashier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 focus:border-indigo-500 rounded-lg pl-9 pr-4 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-605 focus:outline-none transition-all"
+              className="w-full h-10 bg-slate-950 border border-slate-850 focus:border-indigo-500 rounded-lg pl-9 pr-4 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-605 focus:outline-none transition-all"
             />
           </div>
         </div>
 
-        {loading ? (
-          <div className="py-16 text-center text-slate-500 text-xs">Loading sales logs...</div>
+        {loading || pageTransitionLoading ? (
+          <div className="space-y-4 py-8 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 border-b border-slate-800/40">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-slate-800/60 rounded w-2/3"></div>
+                  <div className="h-3 bg-slate-800/40 rounded w-1/3"></div>
+                </div>
+                <div className="h-12 bg-slate-800/50 rounded w-48 animate-pulse"></div>
+              </div>
+            ))}
+          </div>
         ) : filteredSales.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 text-xs border border-dashed border-slate-200 dark:border-slate-850 rounded-xl">
+          <div className="py-16 text-center text-slate-500 text-xs border border-dashed border-slate-800/80 rounded-xl">
             No sales transactions logged.
           </div>
         ) : (
           <>
-            <div className="divide-y divide-slate-200 dark:divide-slate-850">
+            <div className="divide-y divide-slate-800/80">
               {paginatedSales.map((log) => {
                 const isReturned = !!log.returned;
                 const transactionDate = new Date(log.transactionDate);
@@ -169,7 +207,7 @@ export default function SalesPage() {
                   <div 
                     key={log.id} 
                     className={`py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0 transition-all ${
-                      isReturned ? 'opacity-65 bg-slate-50/50 dark:bg-slate-950/10 rounded-lg px-2.5 my-1 border border-dashed border-slate-200 dark:border-slate-800/40' : ''
+                      isReturned ? 'opacity-65 bg-slate-950/20 rounded-lg px-2.5 my-1 border border-dashed border-slate-800/40' : ''
                     }`}
                   >
                     <div className="space-y-1.5 text-left flex-1">
@@ -198,7 +236,7 @@ export default function SalesPage() {
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                       {/* Customer Details */}
-                      <div className="p-3 rounded-lg bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850/60 min-w-[200px] text-left space-y-1">
+                      <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800/80 min-w-[200px] text-left space-y-1">
                         <span className="text-[9px] text-slate-400 font-bold block tracking-wider uppercase">Customer Detail</span>
                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{log.customerName}</p>
                         <p className="text-[10px] text-slate-400">Phone: {log.customerPhone}</p>
@@ -237,16 +275,16 @@ export default function SalesPage() {
                 </span>
                 <div className="flex items-center gap-1 text-slate-600">
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                     <button
                       key={page}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => handlePageChange(page)}
                       className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         page === currentPage
                           ? 'bg-indigo-600 text-white shadow-sm'
@@ -257,9 +295,9 @@ export default function SalesPage() {
                     </button>
                   ))}
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

@@ -20,11 +20,21 @@ import {
   RefreshCw,
   Scan
 } from 'lucide-react';
+import { useTheme } from '@/lib/ThemeProvider';
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    productsData, 
+    loadingProducts, 
+    preloadProducts, 
+    categoriesData, 
+    loadingCategories, 
+    preloadCategories 
+  } = useTheme();
+
+  const products = productsData;
+  const categories = categoriesData;
+  const loading = loadingProducts || loadingCategories;
   const [userRole, setUserRole] = useState<string>('Viewer');
   
   // Search & Filter State
@@ -60,7 +70,6 @@ export default function ProductsPage() {
 
   // Fetch products and categories
   const fetchData = async () => {
-    setLoading(true);
     try {
       // Fetch user role first
       const meRes = await fetch('/api/auth/me');
@@ -68,32 +77,22 @@ export default function ProductsPage() {
         const meData = await meRes.json();
         setUserRole(meData.user.role);
       }
-
-      const prodRes = await fetch('/api/products');
-      const catRes = await fetch('/api/categories');
-      
-      if (prodRes.ok) {
-        const prodData = await prodRes.json();
-        setProducts(prodData);
-      }
-
-      if (catRes.ok) {
-        const catData = await catRes.json();
-        setCategories(catData);
-        if (catData.length > 0) {
-          setCategoryId(catData[0].id);
-        }
-      }
+      await Promise.all([preloadProducts(), preloadCategories()]);
     } catch (err) {
       console.error('Error fetching catalog data:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
+    // Initial fetch to load user session
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (categories.length > 0 && !categoryId) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categories, categoryId]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,14 +304,42 @@ export default function ProductsPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadedPages, setLoadedPages] = useState<number[]>([1]);
+  const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
   const pageSize = 10;
 
-  // Reset to page 1 on filter changes
+  // Reset to page 1 and clear prefetch cache on filter changes
   useEffect(() => {
     setCurrentPage(1);
+    setLoadedPages([1]);
   }, [search, selectedCategory, selectedStatus]);
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+
+  // Background preload next page
+  useEffect(() => {
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages && !loadedPages.includes(nextPage)) {
+      const timer = setTimeout(() => {
+        setLoadedPages((prev) => [...prev, nextPage]);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, totalPages, loadedPages]);
+
+  const handlePageChange = (newPage: number) => {
+    if (loadedPages.includes(newPage)) {
+      setCurrentPage(newPage);
+    } else {
+      setPageTransitionLoading(true);
+      setTimeout(() => {
+        setLoadedPages((prev) => [...prev, newPage]);
+        setCurrentPage(newPage);
+        setPageTransitionLoading(false);
+      }, 350);
+    }
+  };
+
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const isViewer = userRole === 'Viewer';
@@ -536,10 +563,10 @@ export default function ProductsPage() {
 
       {/* Catalog Table */}
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
-        {loading ? (
+        {loading || pageTransitionLoading ? (
           <div className="py-24 text-center">
             <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-3 text-slate-500 text-xs">Fetching catalog items...</p>
+            <p className="mt-3 text-slate-500 text-xs">Loading items page...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="py-20 text-center text-slate-500 space-y-2">
@@ -721,7 +748,7 @@ export default function ProductsPage() {
                   </span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >
@@ -730,7 +757,7 @@ export default function ProductsPage() {
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
+                        onClick={() => handlePageChange(page)}
                         className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           page === currentPage
                             ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
@@ -741,7 +768,7 @@ export default function ProductsPage() {
                       </button>
                     ))}
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >

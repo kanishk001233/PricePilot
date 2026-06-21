@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================================
    THEME SYSTEM — CSS Custom Properties
    The .dark / .light class on <html> controls which palette is active.
@@ -419,20 +421,34 @@ body:has(.fullscreen-mobile-scanner:not(.hidden))::after {
    ============================================================ */
 
 /* --- Backgrounds --- */
-.light .bg-slate-950       { background-color: #f4f5f6 !important; }  /* canvas grey page bg */
-.light .bg-slate-950\/80   { background-color: rgba(244,245,246,0.85) !important; }
-.light .bg-slate-950\/40   { background-color: rgba(244,245,246,0.45) !important; }
-.light .bg-slate-950\/20   { background-color: #f4f5f6 !important; }
-.light .bg-slate-900       { background-color: #ffffff !important; }  /* white cards */
-.light .bg-slate-900\/60   { background-color: #ffffff !important; }
-.light .bg-slate-900\/50   { background-color: #ffffff !important; }
-.light .bg-slate-900\/40   { background-color: #ffffff !important; }
-.light .bg-slate-900\/30   { background-color: #ffffff !important; }
-.light .bg-slate-900\/20   { background-color: #f4f5f6 !important; }
-.light .bg-slate-800       { background-color: #f3f4f6 !important; }  /* soft grey */
-.light .bg-slate-800\/50   { background-color: rgba(243,244,246,0.50) !important; }
-.light .bg-slate-800\/40   { background-color: rgba(243,244,246,0.40) !important; }
-.light .bg-slate-700       { background-color: #cbd5e1 !important; }  /* medium grey border/hover */
+.light .bg-slate-950,
+.light .dark\:bg-slate-950       { background-color: #f4f5f6 !important; }  /* canvas grey page bg */
+.light .bg-slate-950\/80,
+.light .dark\:bg-slate-950\/80   { background-color: rgba(244,245,246,0.85) !important; }
+.light .bg-slate-950\/40,
+.light .dark\:bg-slate-950\/40   { background-color: rgba(244,245,246,0.45) !important; }
+.light .bg-slate-950\/20,
+.light .dark\:bg-slate-950\/20   { background-color: #f4f5f6 !important; }
+.light .bg-slate-900,
+.light .dark\:bg-slate-900       { background-color: #ffffff !important; }  /* white cards */
+.light .bg-slate-900\/60,
+.light .dark\:bg-slate-900\/60   { background-color: #ffffff !important; }
+.light .bg-slate-900\/50,
+.light .dark\:bg-slate-900\/50   { background-color: #ffffff !important; }
+.light .bg-slate-900\/40,
+.light .dark\:bg-slate-900\/40   { background-color: #ffffff !important; }
+.light .bg-slate-900\/30,
+.light .dark\:bg-slate-900\/30   { background-color: #ffffff !important; }
+.light .bg-slate-900\/20,
+.light .dark\:bg-slate-900\/20   { background-color: #f4f5f6 !important; }
+.light .bg-slate-800,
+.light .dark\:bg-slate-800       { background-color: #f3f4f6 !important; }  /* soft grey */
+.light .bg-slate-800\/50,
+.light .dark\:bg-slate-800\/50   { background-color: rgba(243,244,246,0.50) !important; }
+.light .bg-slate-800\/40,
+.light .dark\:bg-slate-800\/40   { background-color: rgba(243,244,246,0.40) !important; }
+.light .bg-slate-700,
+.light .dark\:bg-slate-700       { background-color: #cbd5e1 !important; }  /* medium grey border/hover */
 .light .bg-indigo-950\/40  { background-color: rgba(43,102,255,0.10) !important; }
 .light .bg-indigo-950\/20  { background-color: rgba(43,102,255,0.05) !important; }
 .light .bg-indigo-900\/40  { background-color: rgba(43,102,255,0.10) !important; }
@@ -480,17 +496,28 @@ body:has(.fullscreen-mobile-scanner:not(.hidden))::after {
 .light .text-indigo-300 { color: #1e40af !important; }  /* blue-800 */
 
 /* --- Borders --- */
-.light .border-slate-800    { border-color: #cbd5e1 !important; }  /* light grey border */
-.light .border-slate-800\/80 { border-color: rgba(203,213,225,0.80) !important; }
-.light .border-slate-850    { border-color: #cbd5e1 !important; }
-.light .border-slate-700    { border-color: #cbd5e1 !important; }
-.light .border-slate-700\/50 { border-color: rgba(203,213,225,0.50) !important; }
-.light .border-slate-900    { border-color: #cbd5e1 !important; }
-.light .border-slate-900\/60 { border-color: rgba(203,213,225,0.60) !important; }
-.light .border-indigo-800\/40 { border-color: rgba(43,102,255,0.30) !important; }
-.light .border-indigo-900\/20 { border-color: #cbd5e1 !important; }
-.light .border-indigo-900\/40 { border-color: #cbd5e1 !important; }
-.light .border-amber-900\/30  { border-color: rgba(43,102,255,0.20) !important; }
+.light .border-slate-800,
+.light .dark\:border-slate-800    { border-color: #cbd5e1 !important; }  /* light grey border */
+.light .border-slate-800\/80,
+.light .dark\:border-slate-800\/80 { border-color: rgba(203,213,225,0.80) !important; }
+.light .border-slate-850,
+.light .dark\:border-slate-850    { border-color: #cbd5e1 !important; }
+.light .border-slate-700,
+.light .dark\:border-slate-700    { border-color: #cbd5e1 !important; }
+.light .border-slate-700\/50,
+.light .dark\:border-slate-700\/50 { border-color: rgba(203,213,225,0.50) !important; }
+.light .border-slate-900,
+.light .dark\:border-slate-900    { border-color: #cbd5e1 !important; }
+.light .border-slate-900\/60,
+.light .dark\:border-slate-900\/60 { border-color: rgba(203,213,225,0.60) !important; }
+.light .border-indigo-800\/40,
+.light .dark\:border-indigo-800\/40 { border-color: rgba(43,102,255,0.30) !important; }
+.light .border-indigo-900\/20,
+.light .dark\:border-indigo-900\/20 { border-color: #cbd5e1 !important; }
+.light .border-indigo-900\/40,
+.light .dark\:border-indigo-900\/40 { border-color: #cbd5e1 !important; }
+.light .border-amber-900\/30,
+.light .dark\:border-amber-900\/30  { border-color: rgba(43,102,255,0.20) !important; }
 .light .border-red-900\/50    { border-color: rgba(220,38,38,0.20) !important; }
 .light .border-emerald-700\/50 { border-color: rgba(22,163,74,0.20) !important; }
 

@@ -29,12 +29,11 @@ import {
   Bar, 
   Cell
 } from 'recharts';
+import { useTheme } from '@/lib/ThemeProvider';
 
 export default function DashboardPage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { dashboardData, loadingDashboard, dashboardError, preloadDashboard } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [error, setError] = useState<string>('');
   
   // Collapsible panels states (collapsed by default)
   const [showPriceGaps, setShowPriceGaps] = useState(false);
@@ -42,25 +41,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true);
-    const fetchDashboard = async () => {
-      try {
-        const res = await fetch('/api/dashboard/summary');
-        if (res.ok) {
-          const summaryData = await res.json();
-          setData(summaryData);
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          setError(errData.error || 'Failed to fetch dashboard metrics.');
-        }
-      } catch (err: any) {
-        console.error('Error fetching dashboard summary:', err);
-        setError('Network connection error. Please verify server status.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
   }, []);
+
+  // For visual consistency, map the context state to local variables
+  const data = dashboardData;
+  const loading = loadingDashboard;
+  const error = dashboardError;
 
   if (loading || !mounted) {
     return (

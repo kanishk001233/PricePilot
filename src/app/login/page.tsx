@@ -38,7 +38,7 @@ export default function LoginPage() {
  
       const data = await res.json();
       if (res.ok && data.success) {
-        router.push('/dashboard');
+        router.push('/home');
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -68,8 +68,8 @@ export default function LoginPage() {
  
       const data = await res.json();
       if (res.ok && data.success) {
-        alert('Account created successfully! Directing you to the dashboard...');
-        router.push('/dashboard');
+        alert('Account created successfully! Directing you to the home page...');
+        router.push('/home');
       } else {
         setError(data.error || 'Registration failed');
       }

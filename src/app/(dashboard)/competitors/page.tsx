@@ -29,11 +29,23 @@ import {
   Tooltip 
 } from 'recharts';
 
+import { useTheme } from '@/lib/ThemeProvider';
+
 export default function CompetitorsPage() {
-  const [competitors, setCompetitors] = useState<any[]>([]);
-  const [competitorProducts, setCompetitorProducts] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    competitorsData, 
+    loadingCompetitors, 
+    preloadCompetitors,
+    productsData,
+    loadingProducts,
+    preloadProducts
+  } = useTheme();
+
+  const competitors = competitorsData?.competitors || [];
+  const competitorProducts = competitorsData?.competitorProducts || [];
+  const products = productsData;
+  const loading = loadingCompetitors || loadingProducts;
+
   const [syncing, setSyncing] = useState(false);
   const [discovering, setDiscovering] = useState(false);
   const [userRole, setUserRole] = useState<string>('Viewer');
@@ -42,6 +54,8 @@ export default function CompetitorsPage() {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadedPages, setLoadedPages] = useState<number[]>([1]);
+  const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
   const pageSize = 8;
 
   // Modal State
@@ -127,6 +141,31 @@ export default function CompetitorsPage() {
   }, [products, competitorProducts]);
 
   const totalPages = Math.ceil(groupedProducts.length / pageSize) || 1;
+
+  // Background preload next page
+  React.useEffect(() => {
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages && !loadedPages.includes(nextPage)) {
+      const timer = setTimeout(() => {
+        setLoadedPages((prev) => [...prev, nextPage]);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, totalPages, loadedPages]);
+
+  const handlePageChange = (newPage: number) => {
+    if (loadedPages.includes(newPage)) {
+      setCurrentPage(newPage);
+    } else {
+      setPageTransitionLoading(true);
+      setTimeout(() => {
+        setLoadedPages((prev) => [...prev, newPage]);
+        setCurrentPage(newPage);
+        setPageTransitionLoading(false);
+      }, 350);
+    }
+  };
+
   const paginatedGroupedProducts = React.useMemo(() => {
     return groupedProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   }, [groupedProducts, currentPage]);
@@ -139,27 +178,9 @@ export default function CompetitorsPage() {
         const meData = await meRes.json();
         setUserRole(meData.user.role);
       }
-
-      // Fetch products to populate dropdown
-      const prodRes = await fetch('/api/products');
-      if (prodRes.ok) {
-        const prodData = await prodRes.json();
-        setProducts(prodData);
-        if (prodData.length > 0) setSelectedProductId(prodData[0].id);
-      }
-
-      const res = await fetch('/api/competitors');
-      if (res.ok) {
-        const data = await res.json();
-        setCompetitors(data.competitors);
-        setCompetitorProducts(data.competitorProducts);
-        setActiveSyncs(data.activeSyncs || []);
-        if (data.competitors.length > 0) setSelectedCompetitorId(data.competitors[0].id);
-      }
+      await Promise.all([preloadProducts(), preloadCompetitors()]);
     } catch (err) {
       console.error('Error fetching competitors:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -168,10 +189,28 @@ export default function CompetitorsPage() {
   }, []);
 
   useEffect(() => {
+    if (products.length > 0 && !selectedProductId) {
+      setSelectedProductId(products[0].id);
+    }
+  }, [products, selectedProductId]);
+
+  useEffect(() => {
+    if (competitors.length > 0 && !selectedCompetitorId) {
+      setSelectedCompetitorId(competitors[0].id);
+    }
+  }, [competitors, selectedCompetitorId]);
+
+  useEffect(() => {
+    if (competitorsData?.activeSyncs) {
+      setActiveSyncs(competitorsData.activeSyncs);
+    }
+  }, [competitorsData]);
+
+  useEffect(() => {
     if (activeSyncs.length > 0) {
       const interval = setInterval(() => {
         fetchData();
-      }, 3000);
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [activeSyncs]);
@@ -342,10 +381,10 @@ export default function CompetitorsPage() {
 
       {/* Grid of tracked competitor items */}
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
-        {loading ? (
+        {loading || pageTransitionLoading ? (
           <div className="py-24 text-center">
             <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-3 text-slate-500 text-xs">Loading competitive intelligence feeds...</p>
+            <p className="mt-3 text-slate-500 text-xs">Loading competitors page...</p>
           </div>
         ) : groupedProducts.length === 0 ? (
           <div className="py-20 text-center text-slate-500 space-y-2">
@@ -609,7 +648,7 @@ export default function CompetitorsPage() {
               </span>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
@@ -618,7 +657,7 @@ export default function CompetitorsPage() {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => handlePageChange(page)}
                     className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       page === currentPage
                         ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
@@ -629,7 +668,7 @@ export default function CompetitorsPage() {
                   </button>
                 ))}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >

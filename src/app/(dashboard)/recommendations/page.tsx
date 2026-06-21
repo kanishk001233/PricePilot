@@ -18,14 +18,25 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
+import { useTheme } from '@/lib/ThemeProvider';
+
 export default function RecommendationsPage() {
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    recommendationsData, 
+    loadingRecommendations, 
+    preloadRecommendations 
+  } = useTheme();
+
+  const recommendations = recommendationsData;
+  const loading = loadingRecommendations;
+
   const [userRole, setUserRole] = useState<string>('Viewer');
   const [userEmail, setUserEmail] = useState<string>('');
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadedPages, setLoadedPages] = useState<number[]>([1]);
+  const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
   const pageSize = 6;
   
   // Recalculating state
@@ -45,16 +56,9 @@ export default function RecommendationsPage() {
         setUserRole(meData.user.role);
         setUserEmail(meData.user.email);
       }
-
-      const res = await fetch('/api/pricing/recommend');
-      if (res.ok) {
-        const data = await res.json();
-        setRecommendations(data);
-      }
+      await preloadRecommendations();
     } catch (err) {
       console.error('Error fetching recommendations:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -64,9 +68,35 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
+    setLoadedPages([1]);
   }, [recommendations]);
 
   const totalPages = Math.ceil(recommendations.length / pageSize) || 1;
+
+  // Background preload next page
+  useEffect(() => {
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages && !loadedPages.includes(nextPage)) {
+      const timer = setTimeout(() => {
+        setLoadedPages((prev) => [...prev, nextPage]);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, totalPages, loadedPages]);
+
+  const handlePageChange = (newPage: number) => {
+    if (loadedPages.includes(newPage)) {
+      setCurrentPage(newPage);
+    } else {
+      setPageTransitionLoading(true);
+      setTimeout(() => {
+        setLoadedPages((prev) => [...prev, newPage]);
+        setCurrentPage(newPage);
+        setPageTransitionLoading(false);
+      }, 350);
+    }
+  };
+
   const paginatedRecommendations = React.useMemo(() => {
     return recommendations.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   }, [recommendations, currentPage]);
@@ -157,8 +187,8 @@ export default function RecommendationsPage() {
         {/* Left column: recommendations list */}
         <div className={`space-y-4 ${selectedRec ? 'lg:col-span-7' : 'lg:col-span-12'} transition-all duration-300`}>
           <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
-            {loading ? (
-              <div className="py-24 text-center">
+            {loading || pageTransitionLoading ? (
+              <div className="py-24 text-center animate-pulse">
                 <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <p className="mt-3 text-slate-500 text-xs">Simulating model suggestions...</p>
               </div>
@@ -329,7 +359,7 @@ export default function RecommendationsPage() {
                   </span>
                   <div className="flex items-center gap-1 text-slate-400">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >
@@ -338,7 +368,7 @@ export default function RecommendationsPage() {
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
+                        onClick={() => handlePageChange(page)}
                         className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           page === currentPage
                             ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
@@ -349,7 +379,7 @@ export default function RecommendationsPage() {
                       </button>
                     ))}
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >
