@@ -1,4 +1,3 @@
-import { chromium } from 'playwright';
 import fs from 'fs';
 import { setupContext, DEFAULT_CONTEXT_OPTIONS, normalizePrice, ExtractorResult } from './extractors/utils';
 import { extractAmazon } from './extractors/amazon';
@@ -166,6 +165,7 @@ export const ScraperService = {
 
     const getOrLaunchBrowser = async () => {
       if (!browser) {
+        const { chromium } = await import('playwright');
         browser = await chromium.launch({
           headless: true,
           args: ['--disable-blink-features=AutomationControlled']
@@ -1153,6 +1153,7 @@ export const ScraperService = {
     let shouldCloseBrowser = false;
     try {
       if (!browser) {
+        const { chromium } = await import('playwright');
         browser = await chromium.launch({
           headless: true,
           args: ['--disable-blink-features=AutomationControlled']
@@ -1227,6 +1228,7 @@ export const ScraperService = {
     
     try {
       if (!browser) {
+        const { chromium } = await import('playwright');
         browser = await chromium.launch({
           headless: true,
           args: ['--disable-blink-features=AutomationControlled']
