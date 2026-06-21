@@ -13,7 +13,9 @@ import {
   Layers, 
   Scale, 
   ChevronRight,
-  Info
+  Info,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -33,6 +35,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string>('');
+  
+  // Collapsible panels states (collapsed by default)
+  const [showPriceGaps, setShowPriceGaps] = useState(false);
+  const [showAnomalies, setShowAnomalies] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -285,116 +291,135 @@ export default function DashboardPage() {
 
       {/* Competitor Price Gaps Panel */}
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg">
-        <div className="mb-6">
-          <h3 className="text-base font-bold text-white">Competitor Price Deficits (Price Gaps)</h3>
-          <p className="text-slate-500 text-xs mt-0.5">Variance of our selling price against latest competitor averages.</p>
-        </div>
-
-        {competitorGaps.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
-            No competitor pricing benchmarks available. Try Syncing Market in top bar.
+        <button 
+          onClick={() => setShowPriceGaps(!showPriceGaps)}
+          className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
+        >
+          <div>
+            <h3 className="text-base font-bold text-white">Competitor Price Deficits (Price Gaps)</h3>
+            <p className="text-slate-500 text-xs mt-0.5">Variance of our selling price against latest competitor averages.</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {competitorGaps.map((item: any, idx: number) => {
-              const isUnderpriced = item.gapPercent < -10;
-              const isOverpriced = item.gapPercent > 10;
-              
-              return (
-                <div key={idx} className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/20 space-y-2.5">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <span className="text-[10px] text-slate-500 font-bold block">{item.sku}</span>
-                      <span className="text-xs font-semibold text-slate-200 truncate block">{item.name}</span>
-                    </div>
-                    
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                      isUnderpriced 
-                        ? 'bg-rose-950/40 border-rose-800/30 text-rose-400' 
-                        : isOverpriced 
-                          ? 'bg-amber-950/40 border-amber-800/30 text-amber-400' 
-                          : 'bg-emerald-950/40 border-emerald-800/30 text-emerald-400'
-                    }`}>
-                      {item.gapPercent > 0 ? `+${item.gapPercent}%` : `${item.gapPercent}%`} vs Comp
-                    </span>
-                  </div>
+          <div className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">
+            {showPriceGaps ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </button>
 
-                  <div className="flex justify-between text-xs pt-1 border-t border-slate-900">
-                    <div>
-                      <span className="text-slate-500 text-[10px]">OUR PRICE</span>
-                      <p className="font-bold text-slate-200">₹{(item.ourPrice ?? 0).toFixed(2)}</p>
+        {showPriceGaps && (
+          <div className="mt-6 pt-6 border-t border-slate-800/60 animate-in fade-in duration-200">
+            {competitorGaps.length === 0 ? (
+              <div className="text-center py-8 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
+                No competitor pricing benchmarks available. Try Syncing Market in top bar.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {competitorGaps.map((item: any, idx: number) => {
+                  const isUnderpriced = item.gapPercent < -10;
+                  const isOverpriced = item.gapPercent > 10;
+                  
+                  return (
+                    <div key={idx} className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/20 space-y-2.5">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-500 font-bold block">{item.sku}</span>
+                          <span className="text-xs font-semibold text-slate-200 truncate block">{item.name}</span>
+                        </div>
+                        
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                          isUnderpriced 
+                            ? 'bg-rose-950/40 border-rose-800/30 text-rose-400' 
+                            : isOverpriced 
+                              ? 'bg-amber-950/40 border-amber-800/30 text-amber-400' 
+                              : 'bg-emerald-950/40 border-emerald-800/30 text-emerald-400'
+                        }`}>
+                          {item.gapPercent > 0 ? `+${item.gapPercent}%` : `${item.gapPercent}%`} vs Comp
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-xs pt-1 border-t border-slate-900">
+                        <div>
+                          <span className="text-slate-500 text-[10px]">OUR PRICE</span>
+                          <p className="font-bold text-slate-200">₹{(item.ourPrice ?? 0).toFixed(2)}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-slate-500 text-[10px]">COMP AVERAGE</span>
+                          <p className="font-bold text-slate-200">₹{(item.competitorAverage ?? 0).toFixed(2)}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-slate-500 text-[10px]">COMP AVERAGE</span>
-                      <p className="font-bold text-slate-200">₹{(item.competitorAverage ?? 0).toFixed(2)}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* High Risk Items List */}
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-base font-bold text-white">Anomalies & Margin-Risk Products</h3>
-            <p className="text-slate-500 text-xs mt-0.5">SKUs breaking margins thresholds or priced too far outside market corridors.</p>
-          </div>
-          
-          <Link href="/recommendations" className="text-indigo-400 hover:text-indigo-300 text-xs font-semibold flex items-center gap-0.5">
-            <span>Review pricing engine</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <button 
+            onClick={() => setShowAnomalies(!showAnomalies)}
+            className="flex-1 flex items-center justify-between text-left focus:outline-none cursor-pointer"
+          >
+            <div>
+              <h3 className="text-base font-bold text-white">Anomalies & Margin-Risk Products</h3>
+              <p className="text-slate-500 text-xs mt-0.5">SKUs breaking margins thresholds or priced too far outside market corridors.</p>
+            </div>
+            <div className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">
+              {showAnomalies ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </div>
+          </button>
         </div>
 
-        {highRiskItems.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
-            No active margin risks or price anomalies found.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="pb-3 font-semibold">SKU / Product</th>
-                  <th className="pb-3 font-semibold">Issue</th>
-                  <th className="pb-3 font-semibold">Details</th>
-                  <th className="pb-3 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {highRiskItems.map((item: any) => (
-                  <tr key={`${item.id}-${item.issue}`} className="hover:bg-slate-900/10 transition-colors">
-                    <td className="py-3.5">
-                      <span className="text-slate-500 font-bold block text-[10px]">{item.sku}</span>
-                      <span className="font-medium text-slate-200">{item.name}</span>
-                    </td>
-                    <td className="py-3.5">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[9px] ${
-                        item.severity === 'high' 
-                          ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20' 
-                          : 'bg-amber-950/40 text-amber-400 border border-amber-900/20'
-                      }`}>
-                        <ShieldAlert className="w-2.5 h-2.5" />
-                        {item.issue}
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-slate-400">{item.details}</td>
-                    <td className="py-3.5 text-right">
-                      <Link 
-                        href="/recommendations"
-                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 hover:bg-slate-900 text-indigo-400 text-xs font-semibold transition-all"
-                      >
-                        Optimize
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {showAnomalies && (
+          <div className="mt-6 pt-6 border-t border-slate-800/60 animate-in fade-in duration-200">
+            {highRiskItems.length === 0 ? (
+              <div className="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
+                No active margin risks or price anomalies found.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                      <th className="pb-3 font-semibold">SKU / Product</th>
+                      <th className="pb-3 font-semibold">Issue</th>
+                      <th className="pb-3 font-semibold">Details</th>
+                      <th className="pb-3 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {highRiskItems.map((item: any) => (
+                      <tr key={`${item.id}-${item.issue}`} className="hover:bg-slate-900/10 transition-colors">
+                        <td className="py-3.5">
+                          <span className="text-slate-500 font-bold block text-[10px]">{item.sku}</span>
+                          <span className="font-medium text-slate-200">{item.name}</span>
+                        </td>
+                        <td className="py-3.5">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[9px] ${
+                            item.severity === 'high' 
+                              ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20' 
+                              : 'bg-amber-950/40 text-amber-400 border border-amber-900/20'
+                          }`}>
+                            <ShieldAlert className="w-2.5 h-2.5" />
+                            {item.issue}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-slate-400">{item.details}</td>
+                        <td className="py-3.5 text-right">
+                          <Link 
+                            href="/recommendations"
+                            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 hover:bg-slate-900 text-indigo-400 text-xs font-semibold transition-all"
+                          >
+                            Optimize
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

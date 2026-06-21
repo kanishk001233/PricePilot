@@ -322,12 +322,12 @@ body {
 }
 
 .light .glass-header {
-  background-color: rgba(255, 255, 255, 0.7) !important;
+  background-color: var(--pp-header-bg) !important;
   border-color: rgba(232, 234, 237, 0.7) !important;
 }
 
 .dark .glass-header {
-  background-color: rgba(2, 6, 23, 0.7) !important;
+  background-color: var(--pp-header-bg) !important;
   border-color: rgba(30, 41, 59, 0.5) !important;
 }
 

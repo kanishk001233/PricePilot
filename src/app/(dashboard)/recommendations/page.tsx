@@ -155,7 +155,9 @@ export default function RecommendationsPage() {
                 <p className="text-[11px] text-slate-600">Click &quot;Optimize Catalog&quot; to calculate optimal margins prices.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
@@ -187,16 +189,11 @@ export default function RecommendationsPage() {
                               : 'hover:bg-slate-900/10'
                           }`}
                         >
-                          {/* Product SKU & Name */}
                           <td className="px-5 py-4">
                             <span className="text-[9px] font-bold text-slate-500 block mb-0.5">{r.productSku}</span>
                             <div className="font-semibold text-slate-200 truncate max-w-[180px]">{r.productName}</div>
                           </td>
-
-                          {/* Current Price */}
                           <td className="px-5 py-4 text-right text-slate-400">₹{r.currentPrice.toFixed(2)}</td>
-
-                          {/* Suggested Price */}
                           <td className="px-5 py-4 text-right">
                             <div className="font-black text-indigo-400">₹{r.suggestedPrice.toFixed(2)}</div>
                             <div className={`text-[9px] font-bold flex items-center justify-end gap-0.5 mt-0.5 ${priceDiff > 0 ? 'text-emerald-400' : priceDiff < 0 ? 'text-rose-400' : 'text-slate-500'}`}>
@@ -204,14 +201,10 @@ export default function RecommendationsPage() {
                               <span>{priceDiffPercent > 0 ? `+${priceDiffPercent.toFixed(1)}%` : priceDiffPercent < 0 ? `${priceDiffPercent.toFixed(1)}%` : '0.0%'}</span>
                             </div>
                           </td>
-
-                          {/* Expected Margin */}
                           <td className="px-5 py-4 text-right">
                             <div className="font-semibold text-slate-200">₹{r.marginEstimate.toFixed(2)}</div>
                             <span className="text-[9px] text-slate-400">({suggestedMarginPercent}% margin)</span>
                           </td>
-
-                          {/* Confidence */}
                           <td className="px-5 py-4 text-center">
                             <div className="flex items-center justify-center gap-1.5">
                               <span className="font-semibold text-slate-200">{Math.round(r.confidenceScore)}%</span>
@@ -223,8 +216,6 @@ export default function RecommendationsPage() {
                               </div>
                             </div>
                           </td>
-
-                          {/* Status */}
                           <td className="px-5 py-4 text-center">
                             <span className={`inline-block px-2 py-0.5 rounded font-bold text-[9px] ${
                               r.status === 'Approved'
@@ -236,8 +227,6 @@ export default function RecommendationsPage() {
                               {r.status}
                             </span>
                           </td>
-
-                          {/* Chevron */}
                           <td className="px-5 py-4 text-right">
                             <ChevronRight className="w-4 h-4 text-slate-500 ml-auto" />
                           </td>
@@ -247,13 +236,92 @@ export default function RecommendationsPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+                {recommendations.map((r) => {
+                  const priceDiff = r.suggestedPrice - r.currentPrice;
+                  const priceDiffPercent = ((r.suggestedPrice - r.currentPrice) / r.currentPrice) * 100;
+                  const suggestedMarginPercent = Math.round(((r.suggestedPrice - r.costPrice) / r.suggestedPrice) * 100);
+                  const isSelected = selectedRec?.id === r.id;
+
+                  return (
+                    <div 
+                      key={r.id} 
+                      onClick={() => {
+                        setSelectedRec(r);
+                        setReviewerNotes(r.notes || '');
+                      }}
+                      className={`p-4 rounded-xl border transition-all text-left space-y-3 cursor-pointer ${
+                        isSelected 
+                          ? 'bg-indigo-950/20 border-indigo-500/50' 
+                          : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700/60'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-500 font-bold block">{r.productSku}</span>
+                          <span className="text-sm font-bold text-slate-200 block truncate max-w-[200px]">{r.productName}</span>
+                        </div>
+                        <span className={`inline-block px-2 py-0.5 rounded font-bold text-[9px] ${
+                          r.status === 'Approved'
+                            ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/20'
+                            : r.status === 'Rejected'
+                              ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20'
+                              : 'bg-indigo-950/40 text-indigo-400 border border-indigo-900/20'
+                        }`}>
+                          {r.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-900/60">
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Current Price</span>
+                          <span className="text-slate-400">₹{r.currentPrice.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Suggested Price</span>
+                          <span className="text-indigo-400 font-bold">₹{r.suggestedPrice.toFixed(2)}</span>
+                          <span className={`text-[9px] font-bold inline-flex items-center gap-0.5 ml-1 ${priceDiff > 0 ? 'text-emerald-400' : priceDiff < 0 ? 'text-rose-400' : 'text-slate-500'}`}>
+                            {priceDiff > 0 ? '▲' : priceDiff < 0 ? '▼' : ''} {Math.abs(priceDiffPercent).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Expected Margin</span>
+                          <span className="text-slate-300">₹{r.marginEstimate.toFixed(2)} ({suggestedMarginPercent}%)</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Model Confidence</span>
+                          <span className="text-slate-200 font-semibold">{Math.round(r.confidenceScore)}%</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-1">
+                        <span className="text-[11px] text-indigo-400 font-semibold flex items-center gap-0.5">
+                          <span>Review details</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
             )}
           </div>
         </div>
 
+        {/* Backdrop overlay for mobile bottom drawer */}
+        {selectedRec && (
+          <div 
+            onClick={() => setSelectedRec(null)}
+            className="lg:hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+          />
+        )}
+
         {/* Right column: Recommendation Details Drawer */}
         {selectedRec && (
-          <div className="lg:col-span-5 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-2xl space-y-5 animate-in slide-in-from-right-4 duration-300">
+          <div className="fixed inset-x-0 bottom-0 lg:relative lg:inset-auto z-50 lg:z-auto lg:col-span-5 bg-slate-900 dark:bg-slate-900 border-t lg:border-t-0 lg:border border-slate-800 rounded-t-2xl lg:rounded-2xl p-6 shadow-2xl space-y-5 animate-in slide-in-from-bottom lg:slide-in-from-right-4 duration-300 max-h-[85vh] lg:max-h-none overflow-y-auto lg:overflow-visible">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-slate-800 pb-3">
               <div>

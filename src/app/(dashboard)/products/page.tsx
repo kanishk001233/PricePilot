@@ -427,69 +427,105 @@ export default function ProductsPage() {
             <p className="text-[11px] text-slate-600">Try adjusting your filters or importing items via CSV.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold">SKU / Product Info</th>
-                  <th className="px-6 py-4 font-semibold">Brand</th>
-                  <th className="px-6 py-4 font-semibold text-right">Cost Price</th>
-                  <th className="px-6 py-4 font-semibold text-right">Selling Price</th>
-                  <th className="px-6 py-4 font-semibold text-right">Price Boundaries (Min / Max)</th>
-                  <th className="px-6 py-4 font-semibold text-right">Target Margin</th>
-                  <th className="px-6 py-4 font-semibold text-center">Stock</th>
-                  <th className="px-6 py-4 font-semibold text-center">Status</th>
-                  {!isViewer && <th className="px-6 py-4 font-semibold text-right">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
+                      <th className="px-6 py-4 font-semibold">SKU / Product Info</th>
+                      <th className="px-6 py-4 font-semibold">Brand</th>
+                      <th className="px-6 py-4 font-semibold text-right">Cost Price</th>
+                      <th className="px-6 py-4 font-semibold text-right">Selling Price</th>
+                      <th className="px-6 py-4 font-semibold text-right">Price Boundaries (Min / Max)</th>
+                      <th className="px-6 py-4 font-semibold text-right">Target Margin</th>
+                      <th className="px-6 py-4 font-semibold text-center">Stock</th>
+                      <th className="px-6 py-4 font-semibold text-center">Status</th>
+                      {!isViewer && <th className="px-6 py-4 font-semibold text-right">Actions</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {filteredProducts.map((p) => {
+                      const currentMargin = Math.round(((p.currentPrice - p.costPrice) / p.currentPrice) * 100);
+                      
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-900/10 transition-colors group">
+                          <td className="px-6 py-4">
+                            <span className="text-[10px] font-bold text-slate-500 block mb-0.5">{p.sku}</span>
+                            <div className="font-semibold text-slate-200">{p.name}</div>
+                            <span className="text-[10px] text-slate-400 block mt-0.5">{p.categoryName}</span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-400">{p.brand}</td>
+                          <td className="px-6 py-4 text-right text-slate-300">₹{p.costPrice.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-right font-black text-indigo-400">₹{p.currentPrice.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-right text-slate-400">
+                            ₹{p.minPrice.toFixed(2)} - ₹{p.maxPrice.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="font-semibold text-slate-200">{p.targetMargin}%</span>
+                            <span className={`text-[10px] block mt-0.5 ${currentMargin >= p.targetMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              (Actual: {currentMargin}%)
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
+                              p.inventory < 15 
+                                ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20 animate-pulse' 
+                                : 'bg-slate-800 text-slate-300'
+                            }`}>
+                              {p.inventory}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`inline-block px-2 py-0.5 rounded-full font-bold text-[9px] ${
+                              p.status === 'Active' 
+                                ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/20' 
+                                : p.status === 'Draft' 
+                                  ? 'bg-amber-950/40 text-amber-400 border border-amber-900/20' 
+                                  : 'bg-slate-850 text-slate-500'
+                            }`}>
+                              {p.status}
+                            </span>
+                          </td>
+                          {!isViewer && (
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => openEditModal(p)}
+                                  className="p-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 text-indigo-400 hover:text-indigo-300 transition-all"
+                                  title="Edit product bounds"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(p.id)}
+                                  className="p-1.5 rounded-lg border border-slate-800 hover:border-rose-900 bg-slate-950/30 text-rose-400 hover:text-rose-300 transition-all"
+                                  title="Delete product"
+                                >
+                                  <Trash className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
                 {filteredProducts.map((p) => {
                   const currentMargin = Math.round(((p.currentPrice - p.costPrice) / p.currentPrice) * 100);
-                  
                   return (
-                    <tr key={p.id} className="hover:bg-slate-900/10 transition-colors group">
-                      {/* SKU / Name */}
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] font-bold text-slate-500 block mb-0.5">{p.sku}</span>
-                        <div className="font-semibold text-slate-200">{p.name}</div>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">{p.categoryName}</span>
-                      </td>
-
-                      {/* Brand */}
-                      <td className="px-6 py-4 text-slate-400">{p.brand}</td>
-
-                      {/* Cost price */}
-                      <td className="px-6 py-4 text-right text-slate-300">₹{p.costPrice.toFixed(2)}</td>
-
-                      {/* Selling price */}
-                      <td className="px-6 py-4 text-right font-black text-indigo-400">₹{p.currentPrice.toFixed(2)}</td>
-
-                      {/* Bounds */}
-                      <td className="px-6 py-4 text-right text-slate-400">
-                        ₹{p.minPrice.toFixed(2)} - ₹{p.maxPrice.toFixed(2)}
-                      </td>
-
-                      {/* Target Margin */}
-                      <td className="px-6 py-4 text-right">
-                        <span className="font-semibold text-slate-200">{p.targetMargin}%</span>
-                        <span className={`text-[10px] block mt-0.5 ${currentMargin >= p.targetMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          (Actual: {currentMargin}%)
-                        </span>
-                      </td>
-
-                      {/* Stock */}
-                      <td className="px-6 py-4 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
-                          p.inventory < 15 
-                            ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20 animate-pulse' 
-                            : 'bg-slate-800 text-slate-300'
-                        }`}>
-                          {p.inventory}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4 text-center">
+                    <div key={p.id} className="p-4 rounded-xl border border-slate-800 bg-slate-950/20 space-y-3.5 text-left">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-500 font-bold block">{p.sku}</span>
+                          <span className="text-sm font-bold text-slate-200 block truncate max-w-[200px]">{p.name}</span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">{p.categoryName} • {p.brand}</span>
+                        </div>
                         <span className={`inline-block px-2 py-0.5 rounded-full font-bold text-[9px] ${
                           p.status === 'Active' 
                             ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/20' 
@@ -499,42 +535,70 @@ export default function ProductsPage() {
                         }`}>
                           {p.status}
                         </span>
-                      </td>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-900/60">
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Cost Price</span>
+                          <span className="text-slate-300 font-medium">₹{p.costPrice.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Selling Price</span>
+                          <span className="text-indigo-400 font-bold">₹{p.currentPrice.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Min / Max Bounds</span>
+                          <span className="text-slate-400">₹{p.minPrice.toFixed(2)} - ₹{p.maxPrice.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Target Margin</span>
+                          <span className="text-slate-300 font-medium">{p.targetMargin}%</span>
+                          <span className={`text-[9px] font-bold block ${currentMargin >= p.targetMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            (Actual: {currentMargin}%)
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] uppercase font-bold block">Stock Inventory</span>
+                          <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] mt-0.5 ${
+                            p.inventory < 15 
+                              ? 'bg-rose-950/40 text-rose-400 border border-rose-900/20 animate-pulse' 
+                              : 'bg-slate-800 text-slate-300'
+                          }`}>
+                            {p.inventory}
+                          </span>
+                        </div>
+                      </div>
 
-                      {/* Actions */}
                       {!isViewer && (
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => openEditModal(p)}
-                              className="p-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 text-indigo-400 hover:text-indigo-300 transition-all"
-                              title="Edit product bounds"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(p.id)}
-                              className="p-1.5 rounded-lg border border-slate-800 hover:border-rose-900 bg-slate-950/30 text-rose-400 hover:text-rose-300 transition-all"
-                              title="Delete product"
-                            >
-                              <Trash className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
+                        <div className="flex justify-end gap-2 pt-2 border-t border-slate-900/60">
+                          <button 
+                            onClick={() => openEditModal(p)}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/30 text-indigo-400 text-xs font-semibold cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(p.id)}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-900 bg-slate-950/30 text-rose-400 text-xs font-semibold cursor-pointer"
+                          >
+                            <Trash className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       )}
-                    </tr>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </>
         )}
       </div>
 
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h3 className="text-base font-bold text-white">Add Product to Catalog</h3>
               <button onClick={() => setShowAddModal(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">
@@ -802,7 +866,7 @@ export default function ProductsPage() {
       {/* Edit Modal */}
       {showEditModal && selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h3 className="text-base font-bold text-white">Update Product Boundaries & Cost</h3>
               <button onClick={() => setShowEditModal(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">

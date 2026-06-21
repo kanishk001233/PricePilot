@@ -21,7 +21,8 @@ import {
   FileText,
   AlertCircle,
   Sun,
-  Moon
+  Moon,
+  Home as HomeIcon
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeProvider';
 
@@ -177,6 +178,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const navLinks = [
+    { href: '/home', label: 'Home', icon: HomeIcon, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
     { href: '/dashboard', label: 'Dashboard', icon: BarChart3, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
     { href: '/products', label: 'Catalog Management', icon: Package, roles: ['Admin', 'Pricing Analyst', 'Viewer'] },
     { href: '/recommendations', label: 'Pricing Engine', icon: TrendingUp, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
@@ -236,24 +238,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-3.5 flex-1 lg:flex-initial lg:w-[380px] justify-end">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-1 lg:flex-initial lg:w-[380px] justify-end">
           {/* Sync Trigger */}
           {['Admin', 'Pricing Analyst'].includes(user?.role || '') && (
             <button
               onClick={handleSyncCompetitors}
               disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50"
               style={{ borderColor: 'var(--pp-border)', background: 'var(--pp-bg-secondary)', color: 'var(--pp-text-secondary)' }}
             >
               <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
+              <span>{syncing ? 'Syncing...' : 'Sync'}</span>
             </button>
           )}
 
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="theme-toggle"
+            className="theme-toggle scale-90 sm:scale-100"
             title={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
             aria-label="Toggle theme"
           >
@@ -308,10 +310,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="relative" ref={roleSwitcherRef}>
             <button
               onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-all cursor-pointer"
               style={{ background: 'var(--pp-accent-muted)', color: 'var(--pp-accent-text)', borderColor: 'var(--pp-border)' }}
             >
-              <span>{user?.role}</span>
+              <span className="hidden sm:inline">{user?.role}</span>
+              <span className="sm:hidden">{user?.role.substring(0, 3)}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             
@@ -376,7 +379,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             {notif.type === 'competitor' && <AlertCircle className="w-3.5 h-3.5 text-orange-500" />}
                             {notif.type === 'stock' && <Package className="w-3.5 h-3.5 text-yellow-500" />}
                             {notif.type === 'margin' && <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />}
-                            {notif.type === 'system' && <Sliders className="w-3.5 h-3.5 text-indigo-500" />}
+                            {notif.type === 'system' && <Sliders className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />}
                           </span>
                           <div className="flex-1 min-w-0">
                             <p className={`text-xs font-bold leading-normal ${notif.isRead ? 'text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>
@@ -479,9 +482,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Main Canvas Background & Large Rounded Content Area Wrapper */}
-      <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow py-6 px-3 sm:py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-sm min-h-[calc(100vh-12rem)] border theme-transition" style={{ background: 'var(--pp-bg-secondary)', borderColor: 'var(--pp-border)' }}>
+          <div className="rounded-2xl sm:rounded-[32px] p-4 sm:p-8 lg:p-10 shadow-sm min-h-[calc(100vh-12rem)] border theme-transition" style={{ background: 'var(--pp-bg-secondary)', borderColor: 'var(--pp-border)' }}>
             {children}
           </div>
         </div>

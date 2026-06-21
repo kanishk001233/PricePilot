@@ -131,43 +131,67 @@ export default function LogsPage() {
             <p className="text-xs font-semibold">No logs match search</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold">Timestamp</th>
-                  <th className="px-6 py-4 font-semibold">User Identity</th>
-                  <th className="px-6 py-4 font-semibold">Action</th>
-                  <th className="px-6 py-4 font-semibold">Operation Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-bold uppercase tracking-wider">
+                      <th className="px-6 py-4 font-semibold">Timestamp</th>
+                      <th className="px-6 py-4 font-semibold">User Identity</th>
+                      <th className="px-6 py-4 font-semibold">Action</th>
+                      <th className="px-6 py-4 font-semibold">Operation Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {filteredLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-900/10 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-400 flex items-center gap-2 mt-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span>{new Date(log.timestamp).toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-4 font-medium text-slate-200">{log.userEmail}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[9px] font-bold tracking-wide ${getActionBadgeColor(log.action)}`}>
+                            {getActionIcon(log.action)}
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-300 font-medium leading-relaxed text-left">{log.details}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
                 {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-900/10 transition-colors">
-                    {/* Timestamp */}
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-400 flex items-center gap-2 mt-1">
-                      <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                      <span>{new Date(log.timestamp).toLocaleString()}</span>
-                    </td>
-
-                    {/* User */}
-                    <td className="px-6 py-4 font-medium text-slate-200">{log.userEmail}</td>
-
-                    {/* Action */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[9px] font-bold tracking-wide ${getActionBadgeColor(log.action)}`}>
+                  <div key={log.id} className="p-4 rounded-xl border border-slate-800 bg-slate-950/20 space-y-3 text-left">
+                    <div className="flex justify-between items-start gap-2 flex-wrap">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-bold tracking-wide ${getActionBadgeColor(log.action)}`}>
                         {getActionIcon(log.action)}
                         {log.action}
                       </span>
-                    </td>
-
-                    {/* Details */}
-                    <td className="px-6 py-4 text-slate-300 font-medium leading-relaxed text-left">{log.details}</td>
-                  </tr>
+                      <span className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-slate-500" />
+                        {new Date(log.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-xs space-y-1.5">
+                      <div>
+                        <span className="text-slate-500 text-[10px] font-bold block">USER IDENTITY</span>
+                        <span className="text-slate-200 font-medium">{log.userEmail}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] font-bold block">OPERATION DETAILS</span>
+                        <span className="text-slate-300 font-medium leading-relaxed">{log.details}</span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </>
         )}
       </div>
 
