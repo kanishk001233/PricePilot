@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
       const prod = products.find(p => p.id === t.productId);
       return {
         id: t.id,
+        productId: t.productId,
         productSku: prod ? prod.sku : 'N/A',
         productName: prod ? prod.name : 'Unknown Product',
         quantity: t.quantity,
@@ -25,7 +26,8 @@ export async function GET(req: NextRequest) {
         customerPhone: t.customerPhone || 'N/A',
         customerEmail: t.customerEmail || 'N/A',
         cashierEmail: t.cashierEmail || 'System Process',
-        transactionDate: t.transactionDate
+        transactionDate: t.transactionDate,
+        returned: !!t.returned
       };
     });
 

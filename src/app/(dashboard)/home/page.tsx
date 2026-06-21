@@ -14,7 +14,8 @@ import {
   Package,
   TrendingUp,
   Tag,
-  Archive
+  Archive,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -222,7 +223,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: Barcode Scanner & Catalog */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6 order-2 lg:order-none">
           
           {/* Barcode Scanner Input Box */}
           <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg space-y-4">
@@ -260,22 +261,35 @@ export default function HomePage() {
                           await (window as any)._homeHtml5QrcodeScanner.stop();
                         } catch (e) {}
                         (window as any)._homeHtml5QrcodeScanner = null;
-                        const scanContainer = document.getElementById('home-qr-reader');
-                        if (scanContainer) scanContainer.style.display = 'none';
+                        const scanContainer = document.getElementById('home-qr-reader-wrapper');
+                        if (scanContainer) {
+                          scanContainer.style.display = 'none';
+                          scanContainer.classList.add('hidden');
+                        }
                         return;
                       }
 
-                      const scanContainer = document.getElementById('home-qr-reader');
-                      if (scanContainer) scanContainer.style.display = 'block';
+                      const scanContainer = document.getElementById('home-qr-reader-wrapper');
+                      if (scanContainer) {
+                        scanContainer.style.display = 'flex';
+                        scanContainer.classList.remove('hidden');
+                      }
 
-                      const scanner = new Html5Qrcode("home-qr-reader");
+                      const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+                      const scanner = new Html5Qrcode("home-qr-reader", {
+                        formatsToSupport: [
+                          Html5QrcodeSupportedFormats.UPC_A,
+                          Html5QrcodeSupportedFormats.UPC_E,
+                          Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
+                        ],
+                        verbose: false
+                      });
                       (window as any)._homeHtml5QrcodeScanner = scanner;
 
                       await scanner.start(
                         { facingMode: "environment" },
                         {
-                          fps: 10,
-                          qrbox: { width: 250, height: 150 }
+                          fps: 10
                         },
                         async (decodedText) => {
                           setBarcodeInput(decodedText);
@@ -302,7 +316,10 @@ export default function HomePage() {
                             await scanner.stop();
                           } catch (e) {}
                           (window as any)._homeHtml5QrcodeScanner = null;
-                          if (scanContainer) scanContainer.style.display = 'none';
+                          if (scanContainer) {
+                            scanContainer.style.display = 'none';
+                            scanContainer.classList.add('hidden');
+                          }
                         },
                         (errorMessage) => {
                           // Bypass noise logs
@@ -326,29 +343,41 @@ export default function HomePage() {
               </button>
             </form>
 
-            {/* Camera view container for scanning */}
+            {/* Modal Scanner Backdrop and Box */}
             <div 
-              id="home-qr-reader" 
-              className="hidden w-full overflow-hidden rounded-xl border border-slate-800 bg-black md:relative fullscreen-mobile-scanner"
-              style={{ minHeight: '200px' }}
+              id="home-qr-reader-wrapper"
+              className="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
             >
-              {/* Floating cancel button on mobile viewports */}
-              <button
-                type="button"
-                onClick={async () => {
-                  if ((window as any)._homeHtml5QrcodeScanner) {
-                    try {
-                      await (window as any)._homeHtml5QrcodeScanner.stop();
-                    } catch (e) {}
-                    (window as any)._homeHtml5QrcodeScanner = null;
-                  }
-                  const scanContainer = document.getElementById('home-qr-reader');
-                  if (scanContainer) scanContainer.style.display = 'none';
-                }}
-                className="md:hidden absolute top-6 right-6 z-[10000] px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-850 text-white rounded-full text-xs font-semibold cursor-pointer"
-              >
-                Close Scanner
-              </button>
+              <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-200">Scan UPC Barcode</h3>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if ((window as any)._homeHtml5QrcodeScanner) {
+                        try {
+                          await (window as any)._homeHtml5QrcodeScanner.stop();
+                        } catch (e) {}
+                        (window as any)._homeHtml5QrcodeScanner = null;
+                      }
+                      const wrapper = document.getElementById('home-qr-reader-wrapper');
+                      if (wrapper) {
+                        wrapper.style.display = 'none';
+                        wrapper.classList.add('hidden');
+                      }
+                    }}
+                    className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+                    title="Close Scanner"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div 
+                  id="home-qr-reader" 
+                  className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
+                />
+              </div>
             </div>
 
             {scannedMessage && (
@@ -388,55 +417,93 @@ export default function HomePage() {
               <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-850 rounded-xl">
                 No matching active catalog items found.
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredProducts.map((p) => {
-                  const outOfStock = p.inventory <= 0;
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => !outOfStock && addToCart(p)}
-                      className={`p-4 rounded-xl border transition-all text-left space-y-3 cursor-pointer ${
-                        outOfStock 
-                          ? 'bg-slate-950/20 border-slate-900 opacity-60 pointer-events-none' 
-                          : 'bg-slate-950/10 border-slate-850/60 hover:border-slate-700/60 hover:bg-slate-950/30'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex justify-between items-start gap-2">
-                          <span className="text-[9px] text-slate-500 font-bold tracking-wide uppercase">{p.sku}</span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                            outOfStock 
-                              ? 'bg-rose-950/40 text-rose-400 border border-rose-900/10' 
-                              : p.inventory < 15 
-                                ? 'bg-amber-950/40 text-amber-400 border border-amber-900/10'
-                                : 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/10'
-                          }`}>
-                            {outOfStock ? 'Out of Stock' : `${p.inventory} left`}
-                          </span>
-                        </div>
-                        <h4 className="text-xs font-bold text-slate-200 line-clamp-1 mt-1">{p.name}</h4>
-                      </div>
+            ) : (() => {
+              // Sort products alphabetically
+              const sorted = [...filteredProducts].sort((a, b) => a.name.localeCompare(b.name));
+              
+              // Group by first letter
+              const groups: Record<string, any[]> = {};
+              sorted.forEach(p => {
+                const firstLetter = p.name.trim().charAt(0).toUpperCase() || '#';
+                const key = /^[A-Z]$/.test(firstLetter) ? firstLetter : '#';
+                if (!groups[key]) {
+                  groups[key] = [];
+                }
+                groups[key].push(p);
+              });
 
-                      <div className="flex justify-between items-end border-t border-slate-900/60 pt-2.5">
-                        <div>
-                          <span className="text-[9px] text-slate-500 uppercase block font-semibold">Selling Price</span>
-                          <span className="text-xs font-bold text-slate-200">₹{p.currentPrice.toFixed(2)}</span>
-                        </div>
-                        <span className="text-[10px] text-indigo-400 font-bold group-hover:underline">
-                          + Add to cart
+              // Sort keys so A is first, followed by B, etc.
+              const sortedKeys = Object.keys(groups).sort((a, b) => {
+                if (a === '#') return 1;
+                if (b === '#') return -1;
+                return a.localeCompare(b);
+              });
+
+              return (
+                <div className="space-y-6">
+                  {sortedKeys.map(letter => (
+                    <div key={letter} className="space-y-3">
+                      {/* Alphabetical hint section header */}
+                      <div className="flex items-center gap-2 border-b border-slate-800/80 pb-1 mt-2">
+                        <span className="text-sm font-black text-indigo-400 bg-indigo-950/40 border border-indigo-900/30 w-6 h-6 rounded-lg flex items-center justify-center">
+                          {letter}
                         </span>
+                        <div className="h-[1px] flex-1 bg-slate-850/60" />
+                      </div>
+                      
+                      {/* Products matching this letter */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {groups[letter].map((p) => {
+                          const outOfStock = p.inventory <= 0;
+                          return (
+                            <div
+                              key={p.id}
+                              onClick={() => !outOfStock && addToCart(p)}
+                              className={`p-4 rounded-xl border transition-all text-left space-y-3 cursor-pointer ${
+                                outOfStock 
+                                  ? 'bg-slate-950/20 border-slate-900 opacity-60 pointer-events-none' 
+                                  : 'bg-slate-950/10 border-slate-850/60 hover:border-slate-700/60 hover:bg-slate-950/30'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex justify-between items-start gap-2">
+                                  <span className="text-[9px] text-slate-500 font-bold tracking-wide uppercase">{p.sku}</span>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                    outOfStock 
+                                      ? 'bg-rose-950/40 text-rose-400 border border-rose-900/10' 
+                                      : p.inventory < 15 
+                                        ? 'bg-amber-950/40 text-amber-400 border border-amber-900/10'
+                                        : 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/10'
+                                  }`}>
+                                    {outOfStock ? 'Out of Stock' : `${p.inventory} left`}
+                                  </span>
+                                </div>
+                                <h4 className="text-xs font-bold text-slate-200 line-clamp-1 mt-1">{p.name}</h4>
+                              </div>
+
+                              <div className="flex justify-between items-end border-t border-slate-900/60 pt-2.5">
+                                <div>
+                                  <span className="text-[9px] text-slate-500 uppercase block font-semibold">Selling Price</span>
+                                  <span className="text-xs font-bold text-slate-200">₹{p.currentPrice.toFixed(2)}</span>
+                                </div>
+                                <span className="text-[10px] text-indigo-400 font-bold group-hover:underline">
+                                  + Add to cart
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
         {/* Right Column: Checkout Cart */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6 order-1 lg:order-none">
           <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg flex flex-col h-full min-h-[450px]">
             <div className="flex justify-between items-center border-b border-slate-850 pb-4 mb-4">
               <div className="flex items-center gap-2">

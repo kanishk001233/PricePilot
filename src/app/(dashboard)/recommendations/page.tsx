@@ -9,6 +9,7 @@ import {
   X, 
   Sparkles, 
   ChevronRight, 
+  ChevronLeft,
   MessageSquare, 
   Clock, 
   User, 
@@ -22,6 +23,10 @@ export default function RecommendationsPage() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string>('Viewer');
   const [userEmail, setUserEmail] = useState<string>('');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
   
   // Recalculating state
   const [calculating, setCalculating] = useState(false);
@@ -56,6 +61,15 @@ export default function RecommendationsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [recommendations]);
+
+  const totalPages = Math.ceil(recommendations.length / pageSize) || 1;
+  const paginatedRecommendations = React.useMemo(() => {
+    return recommendations.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [recommendations, currentPage]);
 
   const handleRecalculate = async () => {
     setCalculating(true);
@@ -171,7 +185,7 @@ export default function RecommendationsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
-                    {recommendations.map((r) => {
+                    {paginatedRecommendations.map((r) => {
                       const priceDiff = r.suggestedPrice - r.currentPrice;
                       const priceDiffPercent = ((r.suggestedPrice - r.currentPrice) / r.currentPrice) * 100;
                       const suggestedMarginPercent = Math.round(((r.suggestedPrice - r.costPrice) / r.suggestedPrice) * 100);
@@ -239,7 +253,7 @@ export default function RecommendationsPage() {
 
               {/* Mobile Card View */}
               <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-                {recommendations.map((r) => {
+                {paginatedRecommendations.map((r) => {
                   const priceDiff = r.suggestedPrice - r.currentPrice;
                   const priceDiffPercent = ((r.suggestedPrice - r.currentPrice) / r.currentPrice) * 100;
                   const suggestedMarginPercent = Math.round(((r.suggestedPrice - r.costPrice) / r.suggestedPrice) * 100);
@@ -306,6 +320,44 @@ export default function RecommendationsPage() {
                   );
                 })}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-slate-800/85 p-4 bg-slate-950/20">
+                  <span className="text-xs text-slate-400">
+                    Page {currentPage} of {totalPages} ({recommendations.length} recommendations)
+                  </span>
+                  <div className="flex items-center gap-1 text-slate-400">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          page === currentPage
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                            : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
             )}
           </div>

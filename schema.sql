@@ -133,7 +133,8 @@ CREATE TABLE sales_transactions (
   customer_phone VARCHAR(50),
   customer_email VARCHAR(255),
   cashier_email VARCHAR(255),
-  transaction_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  transaction_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  returned BOOLEAN DEFAULT FALSE
 );
 
 CREATE INDEX idx_sales_transactions_date ON sales_transactions(transaction_date);

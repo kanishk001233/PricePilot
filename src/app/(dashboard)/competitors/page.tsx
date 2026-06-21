@@ -13,6 +13,8 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Edit2,
   Check,
   Search,
@@ -37,6 +39,10 @@ export default function CompetitorsPage() {
   const [userRole, setUserRole] = useState<string>('Viewer');
   const [syncingProductId, setSyncingProductId] = useState<string | null>(null);
   const [activeSyncs, setActiveSyncs] = useState<string[]>([]);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -119,6 +125,11 @@ export default function CompetitorsPage() {
       };
     });
   }, [products, competitorProducts]);
+
+  const totalPages = Math.ceil(groupedProducts.length / pageSize) || 1;
+  const paginatedGroupedProducts = React.useMemo(() => {
+    return groupedProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [groupedProducts, currentPage]);
 
   const fetchData = async () => {
     try {
@@ -343,8 +354,9 @@ export default function CompetitorsPage() {
             <p className="text-[11px] text-slate-600">Click &quot;Add Feed&quot; to set up competitor price checks.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {groupedProducts.map((p: any) => {
+          <>
+            <div className="divide-y divide-slate-800">
+            {paginatedGroupedProducts.map((p: any) => {
               const isExpanded = expandedProductIds.includes(p.productId);
 
               return (
@@ -588,6 +600,45 @@ export default function CompetitorsPage() {
               );
             })}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-800/85 p-4 bg-slate-950/20">
+              <span className="text-xs text-slate-400">
+                Page {currentPage} of {totalPages} ({groupedProducts.length} products)
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      page === currentPage
+                        ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                        : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
 

@@ -85,6 +85,7 @@ export interface SalesTransaction {
   customerEmail?: string | null;
   cashierEmail?: string | null;
   transactionDate: string;
+  returned?: boolean;
 }
 
 export interface AuditLog {

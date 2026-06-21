@@ -331,11 +331,12 @@ export const db = {
       customerPhone: t.customer_phone,
       customerEmail: t.customer_email,
       cashierEmail: t.cashier_email,
-      transactionDate: t.transaction_date
+      transactionDate: t.transaction_date,
+      returned: !!t.returned
     }));
   },
 
-  async recordSale(sale: Omit<seed.SalesTransaction, 'id' | 'transactionDate'>): Promise<seed.SalesTransaction> {
+  async recordSale(sale: Omit<seed.SalesTransaction, 'id' | 'transactionDate' | 'returned'>): Promise<seed.SalesTransaction> {
     ensureDB();
     const { data, error } = await supabase!.from('sales_transactions').insert({
       product_id: sale.productId,
@@ -359,8 +360,19 @@ export const db = {
       customerPhone: data.customer_phone,
       customerEmail: data.customer_email,
       cashierEmail: data.cashier_email,
-      transactionDate: data.transaction_date
+      transactionDate: data.transaction_date,
+      returned: !!data.returned
     };
+  },
+
+  async returnSale(transactionId: string): Promise<boolean> {
+    ensureDB();
+    const { error } = await supabase!
+      .from('sales_transactions')
+      .update({ returned: true })
+      .eq('id', transactionId);
+    if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
+    return true;
   },
 
   // --- Price Recommendations ---

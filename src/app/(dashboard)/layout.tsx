@@ -355,9 +355,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 rounded-xl z-50 p-1.5 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150" style={{ border: '1px solid var(--pp-border)', background: 'var(--pp-bg-secondary)', boxShadow: 'var(--pp-shadow)' }}>
-                <div className="px-3 py-2 flex justify-between items-center mb-1.5" style={{ borderBottom: '1px solid var(--pp-border)' }}>
-                  <span className="text-xs font-bold" style={{ color: 'var(--pp-text-primary)' }}>Alerts ({unreadCount})</span>
+              <div className="absolute right-0 mt-2 w-80 rounded-xl z-50 p-1.5 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200" style={{ boxShadow: 'var(--pp-shadow)' }}>
+                <div className="px-3 py-2 flex justify-between items-center mb-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold text-slate-800 dark:text-white">Alerts ({unreadCount})</span>
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-1.5 p-1 pr-1.5">
                   {notifications.length === 0 ? (
@@ -371,7 +371,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         onClick={() => handleMarkAsRead(notif.id)}
                         className={`p-2.5 rounded-lg text-left cursor-pointer transition-all border ${
                           notif.isRead 
-                            ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800/50 text-slate-400' 
+                            ? 'bg-white dark:bg-slate-800/40 border-slate-100 dark:border-slate-800/50 text-slate-400' 
                             : 'bg-white dark:bg-slate-800 border-orange-500/20 hover:border-orange-500/40 text-slate-800 dark:text-slate-200 shadow-sm'
                         }`}
                       >

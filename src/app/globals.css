@@ -321,28 +321,50 @@ body {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Fullscreen Mobile Scanner layout */
+/* Floating Centered Mobile Scanner layout */
+body:has(.fullscreen-mobile-scanner:not(.hidden))::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9998;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   .fullscreen-mobile-scanner {
     position: fixed !important;
-    inset: 0 !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: #000000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
+    width: 90% !important;
+    max-width: 440px !important;
+    height: auto !important;
+    min-height: 280px !important;
+    background: #0f172a !important;
+    border: 1.5px solid #1e293b !important;
+    border-radius: 20px !important;
+    padding: 16px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
-    align-items: center !important;
+    align-items: center;
+    overflow: hidden !important;
+  }
+  
+  .fullscreen-mobile-scanner.hidden {
+    display: none !important;
   }
   
   .fullscreen-mobile-scanner video {
     object-fit: cover !important;
     width: 100% !important;
     height: 100% !important;
+    border-radius: 12px !important;
   }
 }
 

@@ -16,6 +16,7 @@ import {
   Package,
   Layers,
   ChevronRight,
+  ChevronLeft,
   RefreshCw,
   Scan
 } from 'lucide-react';
@@ -302,6 +303,18 @@ export default function ProductsPage() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  // Reset to page 1 on filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategory, selectedStatus]);
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const isViewer = userRole === 'Viewer';
 
   return (
@@ -374,17 +387,80 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Search & Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 rounded-2xl border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl">
-        <div className="sm:col-span-6 relative">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+        <div className="sm:col-span-6 relative flex items-center">
+          <Search className="absolute left-3 w-4 h-4 text-slate-500" />
           <input
             type="text"
             placeholder="Search by name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-600 focus:border-indigo-600 focus:outline-none transition-all"
+            className="w-full pl-9 pr-10 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-600 focus:border-indigo-650 focus:outline-none transition-all"
           />
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const { Html5Qrcode } = await import('html5-qrcode');
+                
+                // Toggle scanner state
+                if ((window as any)._searchHtml5QrcodeScanner) {
+                  try {
+                    await (window as any)._searchHtml5QrcodeScanner.stop();
+                  } catch (e) {}
+                  (window as any)._searchHtml5QrcodeScanner = null;
+                  const scanContainer = document.getElementById('search-qr-reader-wrapper');
+                  if (scanContainer) {
+                    scanContainer.style.display = 'none';
+                    scanContainer.classList.add('hidden');
+                  }
+                  return;
+                }
+
+                const scanContainer = document.getElementById('search-qr-reader-wrapper');
+                if (scanContainer) {
+                  scanContainer.style.display = 'flex';
+                  scanContainer.classList.remove('hidden');
+                }
+
+                const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+                const scanner = new Html5Qrcode("search-qr-reader", {
+                  formatsToSupport: [
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
+                  ],
+                  verbose: false
+                });
+                (window as any)._searchHtml5QrcodeScanner = scanner;
+
+                await scanner.start(
+                  { facingMode: "environment" },
+                  {
+                    fps: 10
+                  },
+                  async (decodedText) => {
+                    setSearch(decodedText);
+                    try {
+                      await scanner.stop();
+                    } catch (e) {}
+                    (window as any)._searchHtml5QrcodeScanner = null;
+                    if (scanContainer) {
+                      scanContainer.style.display = 'none';
+                      scanContainer.classList.add('hidden');
+                    }
+                  },
+                  (errorMessage) => {}
+                );
+              } catch (err: any) {
+                alert(`Camera access failed: ${err.message || err}`);
+              }
+            }}
+            className="absolute right-2 p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-850 transition-all cursor-pointer"
+            title="Scan barcode with camera"
+          >
+            <Scan className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <div className="sm:col-span-3 flex items-center gap-2">
@@ -411,6 +487,42 @@ export default function ProductsPage() {
             <option value="Draft">Draft</option>
             <option value="Archived">Archived</option>
           </select>
+        </div>
+      </div>
+
+      {/* Barcode scanner view container for search */}
+      <div 
+        id="search-qr-reader-wrapper" 
+        className="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+      >
+        <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-200">Scan UPC Barcode</h3>
+            <button
+              type="button"
+              onClick={async () => {
+                if ((window as any)._searchHtml5QrcodeScanner) {
+                  try {
+                    await (window as any)._searchHtml5QrcodeScanner.stop();
+                  } catch (e) {}
+                  (window as any)._searchHtml5QrcodeScanner = null;
+                }
+                const scanContainer = document.getElementById('search-qr-reader-wrapper');
+                if (scanContainer) {
+                  scanContainer.style.display = 'none';
+                  scanContainer.classList.add('hidden');
+                }
+              }}
+              className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+              title="Close Scanner"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div 
+            id="search-qr-reader" 
+            className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
+          />
         </div>
       </div>
 
@@ -446,7 +558,7 @@ export default function ProductsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
-                    {filteredProducts.map((p) => {
+                    {paginatedProducts.map((p) => {
                       const currentMargin = Math.round(((p.currentPrice - p.costPrice) / p.currentPrice) * 100);
                       
                       return (
@@ -517,7 +629,7 @@ export default function ProductsPage() {
 
               {/* Mobile Card View */}
               <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-                {filteredProducts.map((p) => {
+                {paginatedProducts.map((p) => {
                   const currentMargin = Math.round(((p.currentPrice - p.costPrice) / p.currentPrice) * 100);
                   return (
                     <div key={p.id} className="p-4 rounded-xl border border-slate-800 bg-slate-950/20 space-y-3.5 text-left">
@@ -592,6 +704,44 @@ export default function ProductsPage() {
                   );
                 })}
               </div>
+
+              {/* Pagination controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-slate-800/80 p-4 bg-slate-950/20">
+                  <span className="text-xs text-slate-400">
+                    Page {currentPage} of {totalPages} ({filteredProducts.length} items)
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          page === currentPage
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                            : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
         )}
       </div>
@@ -644,22 +794,35 @@ export default function ProductsPage() {
                               await (window as any)._html5QrcodeScanner.stop();
                             } catch (e) {}
                             (window as any)._html5QrcodeScanner = null;
-                            const scanContainer = document.getElementById('sku-qr-reader');
-                            if (scanContainer) scanContainer.style.display = 'none';
+                            const scanContainer = document.getElementById('sku-qr-reader-wrapper');
+                            if (scanContainer) {
+                              scanContainer.style.display = 'none';
+                              scanContainer.classList.add('hidden');
+                            }
                             return;
                           }
 
-                          const scanContainer = document.getElementById('sku-qr-reader');
-                          if (scanContainer) scanContainer.style.display = 'block';
+                          const scanContainer = document.getElementById('sku-qr-reader-wrapper');
+                          if (scanContainer) {
+                            scanContainer.style.display = 'flex';
+                            scanContainer.classList.remove('hidden');
+                          }
 
-                          const scanner = new Html5Qrcode("sku-qr-reader");
+                          const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+                          const scanner = new Html5Qrcode("sku-qr-reader", {
+                            formatsToSupport: [
+                              Html5QrcodeSupportedFormats.UPC_A,
+                              Html5QrcodeSupportedFormats.UPC_E,
+                              Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
+                            ],
+                            verbose: false
+                          });
                           (window as any)._html5QrcodeScanner = scanner;
 
                           await scanner.start(
                             { facingMode: "environment" },
                             {
-                              fps: 10,
-                              qrbox: { width: 250, height: 150 }
+                              fps: 10
                             },
                             async (decodedText) => {
                               setSku(decodedText);
@@ -667,7 +830,10 @@ export default function ProductsPage() {
                                 await scanner.stop();
                               } catch (e) {}
                               (window as any)._html5QrcodeScanner = null;
-                              if (scanContainer) scanContainer.style.display = 'none';
+                              if (scanContainer) {
+                                scanContainer.style.display = 'none';
+                                scanContainer.classList.add('hidden');
+                              }
                             },
                             (errorMessage) => {
                               // Verbose scanning logs bypassed
@@ -683,29 +849,41 @@ export default function ProductsPage() {
                       <Scan className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {/* Camera view container for scanning */}
+                  {/* Modal Scanner Backdrop and Box */}
                   <div 
-                    id="sku-qr-reader" 
-                    className="hidden w-full mt-2 overflow-hidden rounded-xl border border-slate-800 bg-black md:relative fullscreen-mobile-scanner"
-                    style={{ minHeight: '200px' }}
+                    id="sku-qr-reader-wrapper"
+                    className="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
                   >
-                    {/* Floating cancel button on mobile viewports */}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if ((window as any)._html5QrcodeScanner) {
-                          try {
-                            await (window as any)._html5QrcodeScanner.stop();
-                          } catch (e) {}
-                          (window as any)._html5QrcodeScanner = null;
-                        }
-                        const scanContainer = document.getElementById('sku-qr-reader');
-                        if (scanContainer) scanContainer.style.display = 'none';
-                      }}
-                      className="md:hidden absolute top-6 right-6 z-[10000] px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-850 text-white rounded-full text-xs font-semibold cursor-pointer"
-                    >
-                      Close Scanner
-                    </button>
+                    <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-slate-200">Scan SKU Barcode</h3>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if ((window as any)._html5QrcodeScanner) {
+                              try {
+                                await (window as any)._html5QrcodeScanner.stop();
+                              } catch (e) {}
+                              (window as any)._html5QrcodeScanner = null;
+                            }
+                            const wrapper = document.getElementById('sku-qr-reader-wrapper');
+                            if (wrapper) {
+                              wrapper.style.display = 'none';
+                              wrapper.classList.add('hidden');
+                            }
+                          }}
+                          className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+                          title="Close Scanner"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                      
+                      <div 
+                        id="sku-qr-reader" 
+                        className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
+                      />
+                    </div>
                   </div>
                 </div>
                 
