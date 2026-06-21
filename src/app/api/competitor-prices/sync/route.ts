@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, hasPermission } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { ScraperService } from '@/services/ScraperService';
-import { chromium } from 'playwright';
 
 // Session-scoped in-memory cache to prevent duplicate search engine spamming during the server session
 const attemptedAutoDiscoveries = (global as any).attemptedAutoDiscoveries || new Set<string>();
@@ -90,7 +88,9 @@ export async function POST(req: NextRequest) {
     }
 
     let browser: any = null;
+    const { ScraperService } = await import('@/services/ScraperService');
     try {
+      const { chromium } = await import('playwright');
       browser = await chromium.launch({
         headless: true,
         args: ['--disable-blink-features=AutomationControlled']

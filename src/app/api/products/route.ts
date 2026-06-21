@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, hasPermission } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { ScraperService } from '@/services/ScraperService';
-import { chromium } from 'playwright';
 
 async function getOrCreateCompetitors() {
   let competitors = await db.getCompetitors();
@@ -45,6 +43,7 @@ async function getOrCreateCompetitors() {
 
 async function matchProductCompetitors(product: any, competitors: any[], existingBrowser?: any) {
   try {
+    const { ScraperService } = await import('@/services/ScraperService');
     const searchQuery = product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
       ? `${product.brand} ${product.name}`
       : product.name;
@@ -218,6 +217,7 @@ export async function POST(req: NextRequest) {
 
         let browser: any = null;
         try {
+          const { chromium } = await import('playwright');
           browser = await chromium.launch({
             headless: true,
             args: ['--disable-blink-features=AutomationControlled']
@@ -320,6 +320,7 @@ export async function POST(req: NextRequest) {
         if (competitors.length > 0) {
           console.log(`[Matching] [Background] Running competitor matching for product ${newProduct.sku}...`);
           try {
+            const { chromium } = await import('playwright');
             browser = await chromium.launch({
               headless: true,
               args: ['--disable-blink-features=AutomationControlled']
