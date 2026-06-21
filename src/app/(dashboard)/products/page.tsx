@@ -16,7 +16,8 @@ import {
   Package,
   Layers,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  Scan
 } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -601,7 +602,18 @@ export default function ProductsPage() {
           <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h3 className="text-base font-bold text-white">Add Product to Catalog</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">
+              <button 
+                onClick={async () => {
+                  if ((window as any)._html5QrcodeScanner) {
+                    try {
+                      await (window as any)._html5QrcodeScanner.stop();
+                    } catch (e) {}
+                    (window as any)._html5QrcodeScanner = null;
+                  }
+                  setShowAddModal(false);
+                }} 
+                className="p-1 rounded hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -610,14 +622,91 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Product SKU</label>
-                  <input
-                    type="text"
-                    required
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
-                    placeholder="PP-EL-004"
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      required
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      placeholder="PP-EL-004"
+                      className="w-full pl-3.5 pr-10 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          // Dynamic import of Html5Qrcode to avoid loading during SSR
+                          const { Html5Qrcode } = await import('html5-qrcode');
+                          
+                          // Toggle scanner state
+                          if ((window as any)._html5QrcodeScanner) {
+                            try {
+                              await (window as any)._html5QrcodeScanner.stop();
+                            } catch (e) {}
+                            (window as any)._html5QrcodeScanner = null;
+                            const scanContainer = document.getElementById('sku-qr-reader');
+                            if (scanContainer) scanContainer.style.display = 'none';
+                            return;
+                          }
+
+                          const scanContainer = document.getElementById('sku-qr-reader');
+                          if (scanContainer) scanContainer.style.display = 'block';
+
+                          const scanner = new Html5Qrcode("sku-qr-reader");
+                          (window as any)._html5QrcodeScanner = scanner;
+
+                          await scanner.start(
+                            { facingMode: "environment" },
+                            {
+                              fps: 10,
+                              qrbox: { width: 250, height: 150 }
+                            },
+                            async (decodedText) => {
+                              setSku(decodedText);
+                              try {
+                                await scanner.stop();
+                              } catch (e) {}
+                              (window as any)._html5QrcodeScanner = null;
+                              if (scanContainer) scanContainer.style.display = 'none';
+                            },
+                            (errorMessage) => {
+                              // Verbose scanning logs bypassed
+                            }
+                          );
+                        } catch (err: any) {
+                          alert(`Camera access failed: ${err.message || err}`);
+                        }
+                      }}
+                      className="absolute right-2 p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-850 transition-all cursor-pointer"
+                      title="Scan barcode with camera"
+                    >
+                      <Scan className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {/* Camera view container for scanning */}
+                  <div 
+                    id="sku-qr-reader" 
+                    className="hidden w-full mt-2 overflow-hidden rounded-xl border border-slate-800 bg-black md:relative fullscreen-mobile-scanner"
+                    style={{ minHeight: '200px' }}
+                  >
+                    {/* Floating cancel button on mobile viewports */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if ((window as any)._html5QrcodeScanner) {
+                          try {
+                            await (window as any)._html5QrcodeScanner.stop();
+                          } catch (e) {}
+                          (window as any)._html5QrcodeScanner = null;
+                        }
+                        const scanContainer = document.getElementById('sku-qr-reader');
+                        if (scanContainer) scanContainer.style.display = 'none';
+                      }}
+                      className="md:hidden absolute top-6 right-6 z-[10000] px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-850 text-white rounded-full text-xs font-semibold cursor-pointer"
+                    >
+                      Close Scanner
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="space-y-1">
