@@ -30,7 +30,11 @@ import {
 } from 'recharts';
 
 import { useTheme } from '@/lib/ThemeProvider';
-
+type CompetitorProduct = {
+  id: string;
+  name?: string;
+  price?: number;
+};
 export default function CompetitorsPage() {
   const { 
     competitorsData, 
@@ -42,7 +46,8 @@ export default function CompetitorsPage() {
   } = useTheme();
 
   const competitors = competitorsData?.competitors || [];
-  const competitorProducts = competitorsData?.competitorProducts || [];
+  const competitorProducts: CompetitorProduct[] =
+    competitorsData?.competitorProducts || [];
   const products = productsData;
   const loading = loadingCompetitors || loadingProducts;
 
