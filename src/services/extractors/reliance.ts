@@ -9,7 +9,7 @@ export async function extractReliance(browser: Browser, url: string): Promise<Ex
   
   try {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
     } catch (e: any) {
       console.log(`[Reliance Extractor] page.goto warning: ${e.message}. Continuing.`);
     }

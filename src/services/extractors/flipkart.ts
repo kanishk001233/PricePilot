@@ -8,7 +8,7 @@ export async function extractFlipkart(browser: Browser, url: string): Promise<Ex
   const page = await context.newPage();
   
   try {
-    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
     if (!response || response.status() !== 200) {
       throw new Error(`HTTP error status: ${response ? response.status() : 'No Response'}`);
     }

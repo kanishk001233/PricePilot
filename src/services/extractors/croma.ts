@@ -25,7 +25,7 @@ export async function extractCroma(browser: Browser, url: string): Promise<Extra
   
   try {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
     } catch (e: any) {
       console.log(`[Croma Extractor] page.goto warning: ${e.message}. Continuing.`);
     }

@@ -223,7 +223,7 @@ export const ScraperService = {
           const page = await context.newPage();
           const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
           
-          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
           await page.waitForTimeout(3000);
 
           const bodyText = await page.innerText('body');
@@ -280,7 +280,7 @@ export const ScraperService = {
               try {
                 const url = `https://www.amazon.in/s?k=${encodeURIComponent(broadQuery)}`;
                 console.log(`[Dispatcher] Direct searching Amazon: ${url}`);
-                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
                 await page.waitForTimeout(3000);
                 const links = await page.evaluate(() => {
                   return Array.from(document.querySelectorAll('a'))
@@ -303,7 +303,7 @@ export const ScraperService = {
               try {
                 const url = `https://www.flipkart.com/search?q=${encodeURIComponent(broadQuery)}`;
                 console.log(`[Dispatcher] Direct searching Flipkart: ${url}`);
-                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
                 await page.waitForTimeout(3000);
                 const links = await page.evaluate(() => {
                   return Array.from(document.querySelectorAll('a'))
@@ -325,11 +325,11 @@ export const ScraperService = {
               const page = await context.newPage();
               try {
                 console.log('[Dispatcher] Direct searching Croma: Navigating to homepage first...');
-                await page.goto('https://www.croma.com', { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.goto('https://www.croma.com', { waitUntil: 'domcontentloaded', timeout: 10000 });
                 await page.waitForTimeout(3000);
                 const searchUrl = `https://www.croma.com/search/?text=${encodeURIComponent(broadQuery)}`;
                 console.log(`[Dispatcher] Direct searching Croma: ${searchUrl}`);
-                await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
                 await page.waitForTimeout(3000);
                 const links = await page.evaluate(() => {
                   return Array.from(document.querySelectorAll('a'))
@@ -351,7 +351,7 @@ export const ScraperService = {
               const page = await context.newPage();
               try {
                 console.log('[Dispatcher] Direct searching Reliance: Navigating to homepage first...');
-                await page.goto('https://www.reliancedigital.in', { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.goto('https://www.reliancedigital.in', { waitUntil: 'domcontentloaded', timeout: 10000 });
                 await page.waitForTimeout(3000);
                 const searchInputSelector = 'input[placeholder*="Search"], input[id*="search"], #search';
                 await page.waitForSelector(searchInputSelector);
@@ -381,7 +381,7 @@ export const ScraperService = {
                 const url = `https://www.vijaysales.com/search?q=${encodeURIComponent(broadQuery)}`;
                 console.log(`[Dispatcher] Direct searching Vijay Sales: ${url}`);
                 try {
-                  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
                 } catch (e: any) {
                   console.log(`[Dispatcher] Vijay Sales page.goto warning: ${e.message}. Continuing.`);
                 }
@@ -1190,7 +1190,7 @@ export const ScraperService = {
       const page = await context.newPage();
 
       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
       await page.waitForTimeout(3000);
 
       const snippets = await page.evaluate(() => {

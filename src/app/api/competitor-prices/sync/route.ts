@@ -96,9 +96,9 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Clear cache and auto-discover competitor listings from scratch for a single product sync
-      if (productId) {
-        console.log(`[Sync] Single product ${productId} sync triggered. Clearing cache and running matching/discovery from scratch...`);
+      // Clear cache and auto-discover competitor listings from scratch for a single product sync ONLY if no feeds exist
+      if (productId && activeFeeds.length === 0) {
+        console.log(`[Sync] Single product ${productId} has no existing feeds. Running matching/discovery...`);
         const product = products.find(p => p.id === productId);
         if (product) {
           try {
