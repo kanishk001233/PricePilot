@@ -20,10 +20,11 @@ export const ScraperService = {
    */
   launchBrowserInstance: async function(): Promise<any> {
     const { chromium } = await import('playwright');
-    if (process.env.BROWSERLESS_API_KEY) {
+    const apiKey = process.env.BROWSERLESS_API_KEY || process.env.NEXT_PUBLIC_BROWSERLESS_API_KEY;
+    if (apiKey) {
       console.log(`[Dispatcher] Connecting to Browserless.io remote browser...`);
       return await chromium.connectOverCDP(
-        `wss://chrome.browserless.io?token=${process.env.BROWSERLESS_API_KEY}`
+        `wss://chrome.browserless.io?token=${apiKey}`
       );
     }
     console.log(`[Dispatcher] Launching local Chromium browser...`);
