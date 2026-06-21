@@ -129,6 +129,10 @@ CREATE TABLE sales_transactions (
   quantity INT NOT NULL,
   price_sold DECIMAL(12, 2) NOT NULL,
   revenue DECIMAL(12, 2) NOT NULL,
+  customer_name VARCHAR(255),
+  customer_phone VARCHAR(50),
+  customer_email VARCHAR(255),
+  cashier_email VARCHAR(255),
   transaction_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

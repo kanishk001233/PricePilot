@@ -32,6 +32,13 @@ export default function HomePage() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   
+  // Customer details States
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [lastInvoice, setLastInvoice] = useState<any>(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  
   // Hidden Scanner input ref for key scanning listening
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,6 +147,8 @@ export default function HomePage() {
     setCheckoutSuccess(false);
 
     try {
+      const itemsListForInvoice = [...cart];
+      
       // Process sales sequentially or grouped
       for (const item of cart) {
         const res = await fetch('/api/products/sell', {
@@ -147,7 +156,10 @@ export default function HomePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             productId: item.id,
-            quantity: item.quantity
+            quantity: item.quantity,
+            customerName: customerName || undefined,
+            customerPhone: customerPhone || undefined,
+            customerEmail: customerEmail || undefined
           })
         });
 
@@ -157,11 +169,27 @@ export default function HomePage() {
         }
       }
 
-      // Success
+      // Generate invoice receipt details
+      const invoiceData = {
+        invoiceNumber: `INV-${Date.now().toString().substring(5)}`,
+        date: new Date().toLocaleString(),
+        customer: {
+          name: customerName || 'Walk-in Customer',
+          phone: customerPhone || 'N/A',
+          email: customerEmail || 'N/A'
+        },
+        items: itemsListForInvoice,
+        total: cartTotal
+      };
+
+      setLastInvoice(invoiceData);
       setCart([]);
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerEmail('');
+      setShowCustomerModal(false);
       setCheckoutSuccess(true);
       await fetchProducts(); // Reload latest inventory
-      setTimeout(() => setCheckoutSuccess(false), 5000);
 
     } catch (err: any) {
       alert(`Checkout failed: ${err.message}`);
@@ -466,6 +494,7 @@ export default function HomePage() {
 
             {/* Total & Checkout button */}
             <div className="border-t border-slate-850 pt-4 mt-4 space-y-4">
+              
               <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
                 <span>Subtotal:</span>
                 <span className="text-white text-sm font-bold">₹{cartTotal.toFixed(2)}</span>
@@ -479,24 +508,144 @@ export default function HomePage() {
               )}
 
               <button
-                onClick={handleCheckout}
-                disabled={cart.length === 0 || checkingOut}
+                onClick={() => setShowCustomerModal(true)}
+                disabled={cart.length === 0}
                 className="w-full h-11 rounded-xl bg-indigo-650 hover:bg-indigo-600 disabled:opacity-50 text-xs font-bold text-black hover:text-white transition-all shadow-md shadow-indigo-950/50 hover:shadow-indigo-900/40 active:scale-95 cursor-pointer flex items-center justify-center gap-2"
               >
-                {checkingOut ? (
-                  <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Process Checkout & Sell</span>
-                  </>
-                )}
+                <Check className="w-4 h-4" />
+                <span>Process Checkout & Sell</span>
               </button>
             </div>
           </div>
         </div>
 
       </div>
+
+      {/* Invoice modal overlay */}
+      {lastInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Sale Invoice Generated</h3>
+              <button 
+                onClick={() => setLastInvoice(null)} 
+                className="px-2.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Printable Receipt layout */}
+            <div id="pos-invoice-receipt" className="p-4 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 font-mono text-xs space-y-4">
+              <div className="text-center border-b border-dashed border-slate-800 pb-3">
+                <h4 className="font-bold text-white text-sm">PRICEPILOT STORE</h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Automated Intelligence Retail POS</p>
+                <p className="text-[10px] text-slate-500 mt-1">Invoice: {lastInvoice.invoiceNumber}</p>
+                <p className="text-[10px] text-slate-500">{lastInvoice.date}</p>
+              </div>
+
+              <div className="space-y-1 text-[11px] border-b border-dashed border-slate-800 pb-3">
+                <span className="text-slate-400 uppercase font-bold block text-[10px]">Customer:</span>
+                <p className="text-white">{lastInvoice.customer.name}</p>
+                <p className="text-slate-400">Phone: {lastInvoice.customer.phone}</p>
+                <p className="text-slate-400">Gmail: {lastInvoice.customer.email}</p>
+              </div>
+
+              <div className="space-y-2 border-b border-dashed border-slate-800 pb-3">
+                <div className="flex justify-between text-slate-400 font-bold text-[10px] uppercase">
+                  <span>Item</span>
+                  <span>Qty x Price</span>
+                </div>
+                {lastInvoice.items.map((item: any, idx: number) => (
+                  <div key={idx} className="flex justify-between items-start gap-3">
+                    <span className="truncate max-w-[180px]">{item.name}</span>
+                    <span className="shrink-0">{item.quantity} x ₹{item.currentPrice.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-center text-sm font-bold text-white">
+                <span>Total:</span>
+                <span>₹{lastInvoice.total.toFixed(2)}</span>
+              </div>
+
+              <div className="text-center text-[9px] text-slate-600 pt-2 border-t border-slate-900">
+                Thank you for shopping with PricePilot!
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Customer details modal overlay */}
+      {showCustomerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Customer Details</h3>
+              <button 
+                onClick={() => setShowCustomerModal(false)} 
+                className="px-2.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1 text-left">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Customer Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full h-11 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 text-sm text-slate-200 placeholder-slate-650 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1 text-left">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Customer Phone</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. +91 98765 43210"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full h-11 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 text-sm text-slate-200 placeholder-slate-650 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1 text-left">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Customer Gmail</label>
+                  <input
+                    type="email"
+                    placeholder="e.g. client@gmail.com"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    className="w-full h-11 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 text-sm text-slate-200 placeholder-slate-650 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              disabled={checkingOut}
+              className="w-full h-11 rounded-xl bg-indigo-650 hover:bg-indigo-600 disabled:opacity-50 text-xs font-bold text-black hover:text-white transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+            >
+              {checkingOut ? (
+                <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Finish Checkout & Sell</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

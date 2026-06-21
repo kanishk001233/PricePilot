@@ -22,7 +22,8 @@ import {
   AlertCircle,
   Sun,
   Moon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  ShoppingBag
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeProvider';
 
@@ -183,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/products', label: 'Catalog Management', icon: Package, roles: ['Admin', 'Pricing Analyst', 'Viewer'] },
     { href: '/recommendations', label: 'Pricing Engine', icon: TrendingUp, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
     { href: '/competitors', label: 'Competitors', icon: HelpCircle, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
-    { href: '/rules', label: 'Rules Engine', icon: Sliders, roles: ['Admin', 'Manager', 'Viewer'] },
+    { href: '/sales', label: 'Sales', icon: ShoppingBag, roles: ['Admin', 'Pricing Analyst', 'Manager', 'Viewer'] },
     { href: '/logs', label: 'Audit Trail', icon: FileText, roles: ['Admin', 'Pricing Analyst', 'Manager'] }
   ];
 

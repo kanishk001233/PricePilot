@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { productId, quantity } = await req.json();
+    const { productId, quantity, customerName, customerPhone, customerEmail } = await req.json();
 
     if (!productId || !quantity || quantity <= 0) {
       return NextResponse.json({ error: 'Invalid parameters. Need productId and positive quantity.' }, { status: 400 });
@@ -36,7 +36,11 @@ export async function POST(req: NextRequest) {
       productId,
       quantity,
       priceSold,
-      revenue
+      revenue,
+      customerName: customerName || null,
+      customerPhone: customerPhone || null,
+      customerEmail: customerEmail || null,
+      cashierEmail: session.email
     });
 
     // 4. Update product inventory
@@ -44,10 +48,11 @@ export async function POST(req: NextRequest) {
     await db.updateProduct(productId, { inventory: updatedInventory });
 
     // 5. Log action in Audit Trail
+    const custInfo = customerName ? ` Customer: ${customerName} (${customerPhone || 'N/A'}).` : '';
     await db.logAction(
       session.email,
       'SELL_PRODUCT',
-      `Sold ${quantity} units of SKU ${product.sku} (${product.name}) for ₹${revenue.toFixed(2)}. Inventory updated to ${updatedInventory}.`
+      `Sold ${quantity} units of SKU ${product.sku} (${product.name}) for ₹${revenue.toFixed(2)}. Inventory updated to ${updatedInventory}.${custInfo}`
     );
 
     // 6. Check if stock falls below threshold and trigger notification

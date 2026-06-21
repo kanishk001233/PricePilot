@@ -327,6 +327,10 @@ export const db = {
       quantity: t.quantity,
       priceSold: Number(t.price_sold),
       revenue: Number(t.revenue),
+      customerName: t.customer_name,
+      customerPhone: t.customer_phone,
+      customerEmail: t.customer_email,
+      cashierEmail: t.cashier_email,
       transactionDate: t.transaction_date
     }));
   },
@@ -337,7 +341,11 @@ export const db = {
       product_id: sale.productId,
       quantity: sale.quantity,
       price_sold: sale.priceSold,
-      revenue: sale.revenue
+      revenue: sale.revenue,
+      customer_name: sale.customerName,
+      customer_phone: sale.customerPhone,
+      customer_email: sale.customerEmail,
+      cashier_email: sale.cashierEmail
     }).select().single();
     if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
     
@@ -347,6 +355,10 @@ export const db = {
       quantity: data.quantity,
       priceSold: Number(data.price_sold),
       revenue: Number(data.revenue),
+      customerName: data.customer_name,
+      customerPhone: data.customer_phone,
+      customerEmail: data.customer_email,
+      cashierEmail: data.cashier_email,
       transactionDate: data.transaction_date
     };
   },

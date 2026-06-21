@@ -80,6 +80,10 @@ export interface SalesTransaction {
   quantity: number;
   priceSold: number;
   revenue: number;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  cashierEmail?: string | null;
   transactionDate: string;
 }
 
