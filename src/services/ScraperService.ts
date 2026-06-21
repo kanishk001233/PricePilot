@@ -19,7 +19,7 @@ export const ScraperService = {
    * Launch a local browser or connect to Browserless.io remote browser service in production.
    */
   launchBrowserInstance: async function(): Promise<any> {
-    const { chromium } = await import('playwright');
+    const { chromium } = await import('playwright-core');
     const apiKey = process.env.BROWSERLESS_API_KEY || 
                    process.env.NEXT_PUBLIC_BROWSERLESS_API_KEY ||
                    process.env.BROWSERLESS_TOKEN ||
