@@ -1,4 +1,4 @@
-import { Browser } from 'playwright';
+import type { Browser } from 'playwright';
 import { ExtractorResult, setupContext, normalizePrice, normalizeRating } from './utils';
 
 export async function extractCroma(browser: Browser, url: string): Promise<ExtractorResult> {

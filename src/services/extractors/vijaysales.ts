@@ -1,4 +1,4 @@
-import { Browser } from 'playwright';
+import type { Browser } from 'playwright';
 import { ExtractorResult, DEFAULT_CONTEXT_OPTIONS, setupContext, normalizePrice, normalizeRating } from './utils';
 
 export async function extractVijaySales(browser: Browser, url: string): Promise<ExtractorResult> {

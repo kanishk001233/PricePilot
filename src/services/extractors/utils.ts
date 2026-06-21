@@ -1,4 +1,4 @@
-import { Page, BrowserContext } from 'playwright';
+import type { Page, BrowserContext } from 'playwright';
 
 export interface ExtractorResult {
   price: number | null;
