@@ -43,10 +43,9 @@ export const db = {
     return data;
   },
 
-  // --- Products ---
   async getProducts(): Promise<seed.Product[]> {
     ensureDB();
-    const { data, error } = await supabase!.from('products').select('*');
+    const { data, error } = await supabase!.from('products').select('*').order('created_at', { ascending: false });
     if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
     return (data || []).map((p: any) => ({
       id: p.id,
@@ -170,14 +169,14 @@ export const db = {
 
   async getCompetitors(): Promise<seed.Competitor[]> {
     ensureDB();
-    const { data, error } = await supabase!.from('competitors').select('*');
+    const { data, error } = await supabase!.from('competitors').select('*').order('created_at', { ascending: false });
     if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
     return data || [];
   },
 
   async getCompetitorProducts(): Promise<any[]> {
     ensureDB();
-    const { data, error } = await supabase!.from('competitor_products').select('*');
+    const { data, error } = await supabase!.from('competitor_products').select('*').order('created_at', { ascending: false });
     if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
     return (data || []).map((cp: any) => {
       const parts = cp.url ? cp.url.split('||') : [];

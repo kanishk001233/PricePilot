@@ -258,7 +258,7 @@ export default function HomePage() {
                       // Toggle scanner state
                       if ((window as any)._homeHtml5QrcodeScanner) {
                         try {
-                          await (window as any)._homeHtml5QrcodeScanner.stop();
+                          (window as any)._homeHtml5QrcodeScanner.reset();
                         } catch (e) {}
                         (window as any)._homeHtml5QrcodeScanner = null;
                         const scanContainer = document.getElementById('home-qr-reader-wrapper');
@@ -275,54 +275,58 @@ export default function HomePage() {
                         scanContainer.classList.remove('hidden');
                       }
 
-                      const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
-                      const scanner = new Html5Qrcode("home-qr-reader", {
-                        formatsToSupport: [
-                          Html5QrcodeSupportedFormats.UPC_A,
-                          Html5QrcodeSupportedFormats.UPC_E,
-                          Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
-                        ],
-                        verbose: false
-                      });
-                      (window as any)._homeHtml5QrcodeScanner = scanner;
+                      const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } = await import('@zxing/library');
+                      const formats = [
+                        BarcodeFormat.UPC_A,
+                        BarcodeFormat.UPC_E,
+                        BarcodeFormat.EAN_13,
+                        BarcodeFormat.EAN_8,
+                        BarcodeFormat.UPC_EAN_EXTENSION
+                      ];
+                      const hints = new Map();
+                      hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+                      const reader = new BrowserMultiFormatReader(hints);
+                      (window as any)._homeHtml5QrcodeScanner = reader;
 
-                      await scanner.start(
-                        { facingMode: "environment" },
-                        {
-                          fps: 10
-                        },
-                        async (decodedText) => {
-                          setBarcodeInput(decodedText);
-                          // Automatically look up the product and add to cart
-                          const match = products.find(
-                            p => p.sku.toLowerCase() === decodedText.trim().toLowerCase()
-                          );
-                          if (match) {
-                            addToCart(match);
-                            setScannedMessage({ 
-                              type: 'success', 
-                              text: `Scanned: ${match.name} (SKU: ${match.sku}) added to cart.` 
-                            });
-                            setTimeout(() => setScannedMessage(null), 3000);
-                          } else {
-                            setScannedMessage({ 
-                              type: 'error', 
-                              text: `No product found matching SKU: "${decodedText}"` 
-                            });
-                            setTimeout(() => setScannedMessage(null), 4000);
-                          }
+                      const videoElement = document.getElementById('home-qr-reader') as HTMLVideoElement;
+                      if (!videoElement) return;
 
-                          try {
-                            await scanner.stop();
-                          } catch (e) {}
-                          (window as any)._homeHtml5QrcodeScanner = null;
-                          if (scanContainer) {
-                            scanContainer.style.display = 'none';
-                            scanContainer.classList.add('hidden');
+                      await reader.decodeFromConstraints(
+                        { video: { facingMode: 'environment' } },
+                        videoElement,
+                        async (result, error) => {
+                          if (result) {
+                            const decodedText = result.getText();
+                            const cleanText = (decodedText.length === 13 && decodedText.startsWith('0')) ? decodedText.substring(1) : decodedText;
+                            setBarcodeInput(cleanText);
+                            // Automatically look up the product and add to cart
+                            const match = products.find(
+                              p => p.sku.toLowerCase() === cleanText.trim().toLowerCase()
+                            );
+                            if (match) {
+                              addToCart(match);
+                              setScannedMessage({ 
+                                type: 'success', 
+                                text: `Scanned: ${match.name} (SKU: ${match.sku}) added to cart.` 
+                              });
+                              setTimeout(() => setScannedMessage(null), 3000);
+                            } else {
+                              setScannedMessage({ 
+                                type: 'error', 
+                                text: `No product found matching SKU: "${cleanText}"` 
+                              });
+                              setTimeout(() => setScannedMessage(null), 4000);
+                            }
+
+                            try {
+                              reader.reset();
+                            } catch (e) {}
+                            (window as any)._homeHtml5QrcodeScanner = null;
+                            if (scanContainer) {
+                              scanContainer.style.display = 'none';
+                              scanContainer.classList.add('hidden');
+                            }
                           }
-                        },
-                        (errorMessage) => {
-                          // Bypass noise logs
                         }
                       );
                     } catch (err: any) {
@@ -356,7 +360,7 @@ export default function HomePage() {
                     onClick={async () => {
                       if ((window as any)._homeHtml5QrcodeScanner) {
                         try {
-                          await (window as any)._homeHtml5QrcodeScanner.stop();
+                          (window as any)._homeHtml5QrcodeScanner.reset();
                         } catch (e) {}
                         (window as any)._homeHtml5QrcodeScanner = null;
                       }
@@ -373,9 +377,11 @@ export default function HomePage() {
                   </button>
                 </div>
                 
-                <div 
+                <video 
                   id="home-qr-reader" 
-                  className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
+                  className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square object-cover"
+                  playsInline
+                  muted
                 />
               </div>
             </div>

@@ -406,7 +406,7 @@ export default function ProductsPage() {
                 // Toggle scanner state
                 if ((window as any)._searchHtml5QrcodeScanner) {
                   try {
-                    await (window as any)._searchHtml5QrcodeScanner.stop();
+                    (window as any)._searchHtml5QrcodeScanner.reset();
                   } catch (e) {}
                   (window as any)._searchHtml5QrcodeScanner = null;
                   const scanContainer = document.getElementById('search-qr-reader-wrapper');
@@ -423,34 +423,40 @@ export default function ProductsPage() {
                   scanContainer.classList.remove('hidden');
                 }
 
-                const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
-                const scanner = new Html5Qrcode("search-qr-reader", {
-                  formatsToSupport: [
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
-                  ],
-                  verbose: false
-                });
-                (window as any)._searchHtml5QrcodeScanner = scanner;
+                const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } = await import('@zxing/library');
+                const formats = [
+                  BarcodeFormat.UPC_A,
+                  BarcodeFormat.UPC_E,
+                  BarcodeFormat.EAN_13,
+                  BarcodeFormat.EAN_8,
+                  BarcodeFormat.UPC_EAN_EXTENSION
+                ];
+                const hints = new Map();
+                hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+                const reader = new BrowserMultiFormatReader(hints);
+                (window as any)._searchHtml5QrcodeScanner = reader;
 
-                await scanner.start(
-                  { facingMode: "environment" },
-                  {
-                    fps: 10
-                  },
-                  async (decodedText) => {
-                    setSearch(decodedText);
-                    try {
-                      await scanner.stop();
-                    } catch (e) {}
-                    (window as any)._searchHtml5QrcodeScanner = null;
-                    if (scanContainer) {
-                      scanContainer.style.display = 'none';
-                      scanContainer.classList.add('hidden');
+                const videoElement = document.getElementById('search-qr-reader') as HTMLVideoElement;
+                if (!videoElement) return;
+
+                await reader.decodeFromConstraints(
+                  { video: { facingMode: 'environment' } },
+                  videoElement,
+                  async (result, error) => {
+                    if (result) {
+                      const decodedText = result.getText();
+                      const cleanText = (decodedText.length === 13 && decodedText.startsWith('0')) ? decodedText.substring(1) : decodedText;
+                      setSearch(cleanText);
+                      try {
+                        reader.reset();
+                      } catch (e) {}
+                      (window as any)._searchHtml5QrcodeScanner = null;
+                      if (scanContainer) {
+                        scanContainer.style.display = 'none';
+                        scanContainer.classList.add('hidden');
+                      }
                     }
-                  },
-                  (errorMessage) => {}
+                  }
                 );
               } catch (err: any) {
                 alert(`Camera access failed: ${err.message || err}`);
@@ -503,7 +509,7 @@ export default function ProductsPage() {
               onClick={async () => {
                 if ((window as any)._searchHtml5QrcodeScanner) {
                   try {
-                    await (window as any)._searchHtml5QrcodeScanner.stop();
+                    (window as any)._searchHtml5QrcodeScanner.reset();
                   } catch (e) {}
                   (window as any)._searchHtml5QrcodeScanner = null;
                 }
@@ -519,9 +525,11 @@ export default function ProductsPage() {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div 
+          <video 
             id="search-qr-reader" 
-            className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
+            className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square object-cover"
+            playsInline
+            muted
           />
         </div>
       </div>
@@ -789,9 +797,10 @@ export default function ProductsPage() {
                           const { Html5Qrcode } = await import('html5-qrcode');
                           
                           // Toggle scanner state
+                          // Toggle scanner state
                           if ((window as any)._html5QrcodeScanner) {
                             try {
-                              await (window as any)._html5QrcodeScanner.stop();
+                              (window as any)._html5QrcodeScanner.reset();
                             } catch (e) {}
                             (window as any)._html5QrcodeScanner = null;
                             const scanContainer = document.getElementById('sku-qr-reader-wrapper');
@@ -806,39 +815,42 @@ export default function ProductsPage() {
                           if (scanContainer) {
                             scanContainer.style.display = 'flex';
                             scanContainer.classList.remove('hidden');
-                          }
+                            const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } = await import('@zxing/library');
+                            const formats = [
+                              BarcodeFormat.UPC_A,
+                              BarcodeFormat.UPC_E,
+                              BarcodeFormat.EAN_13,
+                              BarcodeFormat.EAN_8,
+                              BarcodeFormat.UPC_EAN_EXTENSION
+                            ];
+                            const hints = new Map();
+                            hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+                            const reader = new BrowserMultiFormatReader(hints);
+                            (window as any)._html5QrcodeScanner = reader;
 
-                          const { Html5QrcodeSupportedFormats } = await import('html5-qrcode');
-                          const scanner = new Html5Qrcode("sku-qr-reader", {
-                            formatsToSupport: [
-                              Html5QrcodeSupportedFormats.UPC_A,
-                              Html5QrcodeSupportedFormats.UPC_E,
-                              Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION
-                            ],
-                            verbose: false
-                          });
-                          (window as any)._html5QrcodeScanner = scanner;
+                            const videoElement = document.getElementById('sku-qr-reader') as HTMLVideoElement;
+                            if (!videoElement) return;
 
-                          await scanner.start(
-                            { facingMode: "environment" },
-                            {
-                              fps: 10
-                            },
-                            async (decodedText) => {
-                              setSku(decodedText);
-                              try {
-                                await scanner.stop();
-                              } catch (e) {}
-                              (window as any)._html5QrcodeScanner = null;
-                              if (scanContainer) {
-                                scanContainer.style.display = 'none';
-                                scanContainer.classList.add('hidden');
+                            await reader.decodeFromConstraints(
+                              { video: { facingMode: 'environment' } },
+                              videoElement,
+                              async (result, error) => {
+                                if (result) {
+                                  const decodedText = result.getText();
+                                  const cleanText = (decodedText.length === 13 && decodedText.startsWith('0')) ? decodedText.substring(1) : decodedText;
+                                  setSku(cleanText);
+                                  try {
+                                    reader.reset();
+                                  } catch (e) {}
+                                  (window as any)._html5QrcodeScanner = null;
+                                  if (scanContainer) {
+                                    scanContainer.style.display = 'none';
+                                    scanContainer.classList.add('hidden');
+                                  }
+                                }
                               }
-                            },
-                            (errorMessage) => {
-                              // Verbose scanning logs bypassed
-                            }
-                          );
+                            );
+                          }
                         } catch (err: any) {
                           alert(`Camera access failed: ${err.message || err}`);
                         }
@@ -859,30 +871,32 @@ export default function ProductsPage() {
                         <h3 className="text-sm font-semibold text-slate-200">Scan SKU Barcode</h3>
                         <button
                           type="button"
-                          onClick={async () => {
-                            if ((window as any)._html5QrcodeScanner) {
-                              try {
-                                await (window as any)._html5QrcodeScanner.stop();
-                              } catch (e) {}
-                              (window as any)._html5QrcodeScanner = null;
-                            }
-                            const wrapper = document.getElementById('sku-qr-reader-wrapper');
-                            if (wrapper) {
-                              wrapper.style.display = 'none';
-                              wrapper.classList.add('hidden');
-                            }
-                          }}
-                          className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
-                          title="Close Scanner"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                      
-                      <div 
-                        id="sku-qr-reader" 
-                        className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square"
-                      />
+                        onClick={async () => {
+                          if ((window as any)._html5QrcodeScanner) {
+                            try {
+                              (window as any)._html5QrcodeScanner.reset();
+                            } catch (e) {}
+                            (window as any)._html5QrcodeScanner = null;
+                          }
+                          const wrapper = document.getElementById('sku-qr-reader-wrapper');
+                          if (wrapper) {
+                            wrapper.style.display = 'none';
+                            wrapper.classList.add('hidden');
+                          }
+                        }}
+                        className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+                        title="Close Scanner"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <video 
+                      id="sku-qr-reader" 
+                      className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square object-cover"
+                      playsInline
+                      muted
+                    />
                     </div>
                   </div>
                 </div>
