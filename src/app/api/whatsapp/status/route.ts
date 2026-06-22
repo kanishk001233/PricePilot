@@ -9,7 +9,7 @@ const noCacheHeaders = {
   'Expires': '0',
 };
 
-const serviceUrl = process.env.WHATSAPP_SERVICE_URL;
+const serviceUrl = process.env.WHATSAPP_SERVICE_URL || 'http://13.60.66.14:3001';
 
 export async function GET(req: NextRequest) {
   try {

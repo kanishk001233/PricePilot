@@ -1,9 +1,5 @@
 export async function sendWhatsAppMessage(to: string, message: string) {
-  const serviceUrl = process.env.WHATSAPP_SERVICE_URL;
-  if (!serviceUrl) {
-    console.warn('[WhatsApp] WHATSAPP_SERVICE_URL is not configured. Skipping WhatsApp message.');
-    return;
-  }
+  const serviceUrl = process.env.WHATSAPP_SERVICE_URL || 'http://13.60.66.14:3001';
 
   console.log(`[WhatsApp] Forwarding message to microservice: ${serviceUrl}/send`);
   const res = await fetch(`${serviceUrl}/send`, {
