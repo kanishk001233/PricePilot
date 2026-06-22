@@ -235,6 +235,16 @@ export default function HomePage() {
       };
 
       setLastInvoice(invoiceData);
+      
+      // Send invoice via email & WhatsApp asynchronously in background
+      fetch('/api/invoice/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData)
+      }).catch(err => {
+        console.error('Invoice send api error:', err);
+      });
+
       setCart([]);
       setCustomerName('');
       setCustomerPhone('');
@@ -591,6 +601,9 @@ export default function HomePage() {
                   <Check className="w-4 h-4" />
                   <span>Process Checkout & Sell</span>
                 </button>
+                <div className="text-[10px] text-slate-400 text-center leading-normal mt-2">
+                  ℹ️ Invoice will be sent to customer's WhatsApp and Email
+                </div>
               </div>
             </div>
           </div>
@@ -854,6 +867,10 @@ export default function HomePage() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="text-[11px] text-indigo-400 bg-indigo-950/40 border border-indigo-900/50 rounded-xl p-3 text-center leading-normal">
+              ℹ️ Invoice receipt will be automatically sent to the WhatsApp number and Email address provided.
             </div>
 
             <button

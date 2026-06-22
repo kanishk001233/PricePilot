@@ -40,10 +40,89 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsappInfo, setWhatsappInfo] = useState<{ status: string; qr: string | null }>({ status: 'DISCONNECTED', qr: null });
+  const [loadingWhatsapp, setLoadingWhatsapp] = useState(false);
 
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const roleSwitcherRef = useRef<HTMLDivElement>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchWhatsAppStatus = async () => {
+    try {
+      const res = await fetch('/api/whatsapp/status');
+      if (res.ok) {
+        const data = await res.json();
+        setWhatsappInfo(data);
+        if (data.status === 'CONNECTED') {
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching whatsapp status:', err);
+    }
+  };
+
+  const handleConnectWhatsApp = async () => {
+    setLoadingWhatsapp(true);
+    try {
+      const res = await fetch('/api/whatsapp/status', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setWhatsappInfo(data);
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        pollingRef.current = setInterval(fetchWhatsAppStatus, 2000);
+      }
+    } catch (err) {
+      console.error('Error connecting whatsapp:', err);
+    } finally {
+      setLoadingWhatsapp(false);
+    }
+  };
+
+  const handleDisconnectWhatsApp = async () => {
+    setLoadingWhatsapp(true);
+    try {
+      const res = await fetch('/api/whatsapp/status', { method: 'DELETE' });
+      if (res.ok) {
+        const data = await res.json();
+        setWhatsappInfo({ status: data.status, qr: null });
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+        showAlert('WhatsApp Disconnected', 'WhatsApp connection has been closed.', 'success');
+      }
+    } catch (err) {
+      console.error('Error disconnecting whatsapp:', err);
+    } finally {
+      setLoadingWhatsapp(false);
+    }
+  };
+
+  // Poll status when modal is open and not connected
+  useEffect(() => {
+    if (showWhatsAppModal) {
+      fetchWhatsAppStatus();
+      pollingRef.current = setInterval(fetchWhatsAppStatus, 2000);
+    } else {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [showWhatsAppModal]);
+
 
   const fetchNotifications = async () => {
     try {
@@ -416,6 +495,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <p className="text-[10px] truncate" style={{ color: 'var(--pp-text-muted)' }}>{user?.email}</p>
                 </div>
                 <button
+                  onClick={() => {
+                    setShowWhatsAppModal(true);
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer mb-1"
+                >
+                  <svg className="w-3.5 h-3.5 text-emerald-500 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 1.981 14.116.957 11.488.957c-5.43 0-9.85 4.37-9.853 9.8.001 1.956.513 3.864 1.482 5.561l-.979 3.573 3.69-.968zm12.188-7.923c-.332-.165-1.962-.962-2.268-1.073-.306-.113-.53-.167-.752.167-.221.332-.857 1.073-1.05 1.294-.194.22-.387.246-.72.08-.332-.167-1.402-.513-2.671-1.637-1.012-.897-1.696-2.005-1.895-2.338-.2-.332-.021-.512.145-.678.15-.148.332-.384.498-.577.166-.192.222-.328.332-.547.11-.22.055-.411-.027-.577-.083-.165-.752-1.799-1.03-2.47-.27-.65-.547-.563-.752-.574-.195-.01-.418-.011-.641-.011-.222 0-.585.083-.892.417-.306.332-1.17 1.137-1.17 2.77 0 1.634 1.196 3.21 1.362 3.432.166.223 2.353 3.574 5.698 5.004.796.34 1.417.544 1.902.698.8.252 1.528.217 2.103.132.64-.095 1.962-.797 2.238-1.567.277-.77.277-1.432.194-1.567-.083-.135-.306-.217-.638-.382z"/>
+                  </svg>
+                  Connect WhatsApp
+                </button>
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
                 >
@@ -511,6 +602,104 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </main>
+
+      {/* WhatsApp Connection Modal */}
+      {showWhatsAppModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 text-center">
+            
+            {/* Header */}
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800 text-left">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-emerald-500 fill-current" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 1.981 14.116.957 11.488.957c-5.43 0-9.85 4.37-9.853 9.8.001 1.956.513 3.864 1.482 5.561l-.979 3.573 3.69-.968zm12.188-7.923c-.332-.165-1.962-.962-2.268-1.073-.306-.113-.53-.167-.752.167-.221.332-.857 1.073-1.05 1.294-.194.22-.387.246-.72.08-.332-.167-1.402-.513-2.671-1.637-1.012-.897-1.696-2.005-1.895-2.338-.2-.332-.021-.512.145-.678.15-.148.332-.384.498-.577.166-.192.222-.328.332-.547.11-.22.055-.411-.027-.577-.083-.165-.752-1.799-1.03-2.47-.27-.65-.547-.563-.752-.574-.195-.01-.418-.011-.641-.011-.222 0-.585.083-.892.417-.306.332-1.17 1.137-1.17 2.77 0 1.634 1.196 3.21 1.362 3.432.166.223 2.353 3.574 5.698 5.004.796.34 1.417.544 1.902.698.8.252 1.528.217 2.103.132.64-.095 1.962-.797 2.238-1.567.277-.77.277-1.432.194-1.567-.083-.135-.306-.217-.638-.382z"/>
+                </svg>
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">WhatsApp Connection</h3>
+              </div>
+              <button 
+                onClick={() => setShowWhatsAppModal(false)} 
+                className="px-2 py-1 text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Content Body */}
+            <div className="space-y-4">
+              {whatsappInfo.status === 'DISCONNECTED' && (
+                <div className="space-y-4 py-2">
+                  <div className="w-12 h-12 bg-slate-850 border border-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-600">
+                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 1.981 14.116.957 11.488.957c-5.43 0-9.85 4.37-9.853 9.8.001 1.956.513 3.864 1.482 5.561l-.979 3.573 3.69-.968zm12.188-7.923c-.332-.165-1.962-.962-2.268-1.073-.306-.113-.53-.167-.752.167-.221.332-.857 1.073-1.05 1.294-.194.22-.387.246-.72.08-.332-.167-1.402-.513-2.671-1.637-1.012-.897-1.696-2.005-1.895-2.338-.2-.332-.021-.512.145-.678.15-.148.332-.384.498-.577.166-.192.222-.328.332-.547.11-.22.055-.411-.027-.577-.083-.165-.752-1.799-1.03-2.47-.27-.65-.547-.563-.752-.574-.195-.01-.418-.011-.641-.011-.222 0-.585.083-.892.417-.306.332-1.17 1.137-1.17 2.77 0 1.634 1.196 3.21 1.362 3.432.166.223 2.353 3.574 5.698 5.004.796.34 1.417.544 1.902.698.8.252 1.528.217 2.103.132.64-.095 1.962-.797 2.238-1.567.277-.77.277-1.432.194-1.567-.083-.135-.306-.217-.638-.382z"/>
+                    </svg>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-200">WhatsApp is Disconnected</p>
+                    <p className="text-[10px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+                      Connect your account to send receipts directly to customers.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleConnectWhatsApp}
+                    disabled={loadingWhatsapp}
+                    className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-[11px] font-bold text-white transition-all shadow-md cursor-pointer"
+                  >
+                    {loadingWhatsapp ? 'Starting Connection...' : 'Connect WhatsApp'}
+                  </button>
+                </div>
+              )}
+
+              {whatsappInfo.status === 'INITIALIZING' && (
+                <div className="space-y-4 py-6">
+                  <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-200">Initializing Client</p>
+                    <p className="text-[10px] text-slate-400">Launching WhatsApp browser session...</p>
+                  </div>
+                </div>
+              )}
+
+              {whatsappInfo.status === 'QR_RECEIVED' && whatsappInfo.qr && (
+                <div className="space-y-4 py-2">
+                  <p className="text-[11px] font-bold text-slate-300">Scan QR Code with WhatsApp</p>
+                  <div className="bg-white p-3 rounded-xl inline-block shadow-md">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(whatsappInfo.qr)}&size=160x160`} 
+                      alt="WhatsApp QR Code"
+                      className="w-40 h-40 mx-auto" 
+                    />
+                  </div>
+                  <div className="space-y-1 text-[10px] text-slate-400 max-w-xs mx-auto leading-normal text-left px-4">
+                    <p>• Open WhatsApp on your phone</p>
+                    <p>• Go to Settings / Linked Devices</p>
+                    <p>• Tap "Link a Device" and scan code</p>
+                  </div>
+                </div>
+              )}
+
+              {whatsappInfo.status === 'CONNECTED' && (
+                <div className="space-y-4 py-2">
+                  <div className="w-12 h-12 bg-emerald-950/40 border border-emerald-900 rounded-full flex items-center justify-center mx-auto text-emerald-400">
+                    <Check className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-200">WhatsApp Connected</p>
+                    <p className="text-[10px] text-emerald-400">Successfully linked! Automatic receipts are active.</p>
+                  </div>
+                  <button
+                    onClick={handleDisconnectWhatsApp}
+                    disabled={loadingWhatsapp}
+                    className="w-full h-10 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-[11px] font-bold text-white transition-all shadow-md cursor-pointer"
+                  >
+                    {loadingWhatsapp ? 'Disconnecting...' : 'Disconnect WhatsApp'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
