@@ -23,7 +23,8 @@ export const ScraperService = {
     const apiKey = process.env.BROWSERLESS_API_KEY || 
                    process.env.NEXT_PUBLIC_BROWSERLESS_API_KEY ||
                    process.env.BROWSERLESS_TOKEN ||
-                   process.env.NEXT_PUBLIC_BROWSERLESS_TOKEN;
+                   process.env.NEXT_PUBLIC_BROWSERLESS_TOKEN ||
+                   '2UkE694gIajLns62c7741f3dca25fa41880172c2b3ca8fb1b';
     if (apiKey) {
       console.log(`[Dispatcher] Connecting to Browserless.io remote browser (stealth mode)...`);
       return await chromium.connectOverCDP(
