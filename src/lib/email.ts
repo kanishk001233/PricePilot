@@ -24,8 +24,8 @@ interface InvoiceData {
 export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || '587');
-  const user = process.env.SMTP_USER || 'placeholder@gmail.com';
-  const pass = process.env.SMTP_PASS || 'placeholder_password';
+  const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
+  const pass = process.env.SMTP_PASS || 'psoe hzcy huzx oiti';
   const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
   const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
@@ -210,8 +210,8 @@ export interface ReturnData {
 export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || '587');
-  const user = process.env.SMTP_USER || 'placeholder@gmail.com';
-  const pass = process.env.SMTP_PASS || 'placeholder_password';
+  const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
+  const pass = process.env.SMTP_PASS || 'psoe hzcy huzx oiti';
   const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
   const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
