@@ -26,7 +26,8 @@ export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
   const port = Number(process.env.SMTP_PORT || '587');
   const user = process.env.SMTP_USER || 'placeholder@gmail.com';
   const pass = process.env.SMTP_PASS || 'placeholder_password';
-  const from = process.env.EMAIL_FROM || '"PricePilot Store" <store@pricepilot.com>';
+  const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
   console.log(`[Email] Setting up SMTP transport: ${host}:${port}...`);
   const transporter = nodemailer.createTransport({
@@ -211,7 +212,8 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
   const port = Number(process.env.SMTP_PORT || '587');
   const user = process.env.SMTP_USER || 'placeholder@gmail.com';
   const pass = process.env.SMTP_PASS || 'placeholder_password';
-  const from = process.env.EMAIL_FROM || '"PricePilot Store" <store@pricepilot.com>';
+  const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
   console.log(`[Email] Setting up SMTP transport: ${host}:${port} for return email...`);
   const transporter = nodemailer.createTransport({
@@ -253,7 +255,7 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr>
                       <td style="vertical-align: middle;">
-                        \${
+                        ${
                           fs.existsSync(logoPath)
                             ? '<img src="cid:logo" alt="PricePilot" style="height: 38px; display: block;" />'
                             : '<h1 style="color: #ffffff; font-size: 24px; font-weight: 850; margin: 0; letter-spacing: -0.5px;">PRICEPILOT</h1>'
@@ -274,14 +276,14 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                     <tr>
                       <td width="55%" style="vertical-align: top; text-align: left;">
                         <h4 style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px;">Customer Details:</h4>
-                        <div style="font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">\${returnData.customer.name}</div>
-                        <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Phone: \${returnData.customer.phone}</div>
-                        <div style="font-size: 12px; color: #64748b;">Email: \${returnData.customer.email}</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">${returnData.customer.name}</div>
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Phone: ${returnData.customer.phone}</div>
+                        <div style="font-size: 12px; color: #64748b;">Email: ${returnData.customer.email}</div>
                       </td>
                       <td width="45%" style="vertical-align: top; text-align: right;">
                         <h4 style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px;">Return Details:</h4>
-                        <div style="font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">Tx ID: \${returnData.transactionId}</div>
-                        <div style="font-size: 12px; color: #64748b;">Date: \${returnData.date}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">Tx ID: ${returnData.transactionId}</div>
+                        <div style="font-size: 12px; color: #64748b;">Date: ${returnData.date}</div>
                       </td>
                     </tr>
                   </table>
@@ -303,12 +305,12 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                     <tbody>
                       <tr>
                         <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;">
-                          <div style="font-size: 13px; font-weight: bold; color: #1e293b;">\${returnData.productName}</div>
-                          <div style="font-size: 11px; color: #64748b;">SKU: \${returnData.sku}</div>
+                          <div style="font-size: 13px; font-weight: bold; color: #1e293b;">${returnData.productName}</div>
+                          <div style="font-size: 11px; color: #64748b;">SKU: ${returnData.sku}</div>
                         </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569; font-size: 13px;">\${returnData.quantity}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #475569; font-size: 13px;">₹\${returnData.priceSold.toFixed(2)}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #b91c1c; font-weight: bold; font-size: 13px;">₹\${returnData.totalRefunded.toFixed(2)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569; font-size: 13px;">${returnData.quantity}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #475569; font-size: 13px;">₹${returnData.priceSold.toFixed(2)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #b91c1c; font-weight: bold; font-size: 13px;">₹${returnData.totalRefunded.toFixed(2)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -325,7 +327,7 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                           <tr style="border-top: 2px solid #ef4444; background-color: #fef2f2;">
                             <td style="padding: 12px; font-size: 14px; font-weight: bold; color: #991b1b; text-align: left;">Total Refunded:</td>
-                            <td style="padding: 12px; font-size: 16px; font-weight: 900; color: #991b1b; text-align: right;">₹\${returnData.totalRefunded.toFixed(2)}</td>
+                            <td style="padding: 12px; font-size: 16px; font-weight: 900; color: #991b1b; text-align: right;">₹${returnData.totalRefunded.toFixed(2)}</td>
                           </tr>
                         </table>
                       </td>
@@ -352,11 +354,11 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
     </html>
   `;
 
-  console.log(`[Email] Dispatching return confirmation email to \${toEmail}...`);
+  console.log(`[Email] Dispatching return confirmation email to ${toEmail}...`);
   await transporter.sendMail({
     from,
     to: toEmail,
-    subject: `Return Confirmation: Transaction #\${returnData.transactionId}`,
+    subject: `Return Confirmation: Transaction #${returnData.transactionId}`,
     html: htmlContent,
     attachments,
   });

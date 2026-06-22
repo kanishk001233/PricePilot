@@ -87,13 +87,13 @@ export async function POST(req: NextRequest) {
         try {
           if (isCustomerPhoneValid && returnData.customer.phone) {
             const whatsappText = `↩️ *PricePilot Return Confirmation* ↩️\n` +
-              `Transaction ID: \${returnData.transactionId}\n` +
-              `Date: \${returnData.date}\n\n` +
+              `Transaction ID: ${returnData.transactionId}\n` +
+              `Date: ${returnData.date}\n\n` +
               `*Customer details:*\n` +
-              `Name: \${returnData.customer.name}\n` +
-              `Phone: \${returnData.customer.phone}\n\n` +
+              `Name: ${returnData.customer.name}\n` +
+              `Phone: ${returnData.customer.phone}\n\n` +
               `*Returned Item:*\n` +
-              `- \${returnData.productName} (Qty: \${returnData.quantity}) - Refunded: ₹\${returnData.totalRefunded.toFixed(2)}\n\n` +
+              `- ${returnData.productName} (Qty: ${returnData.quantity}) - Refunded: ₹${returnData.totalRefunded.toFixed(2)}\n\n` +
               `The item return has been processed. Thank you!`;
 
             await sendWhatsAppMessage(returnData.customer.phone, whatsappText);
