@@ -8,7 +8,7 @@ import { useTheme } from '@/lib/ThemeProvider';
  
 export default function LoginPage() {
   const router = useRouter();
-  const { preloadUserSession } = useTheme();
+  const { preloadUserSession, showAlert } = useTheme();
   
   // Tabs toggle
   const [isSignUp, setIsSignUp] = useState(false);
@@ -71,7 +71,7 @@ export default function LoginPage() {
  
       const data = await res.json();
       if (res.ok && data.success) {
-        alert('Account created successfully! Directing you to the home page...');
+        showAlert('Account Created', 'Account created successfully! Directing you to the home page...', 'success');
         await preloadUserSession();
         router.push('/home');
       } else {

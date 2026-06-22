@@ -26,11 +26,15 @@ export default function RecommendationsPage() {
     loadingRecommendations, 
     preloadRecommendations,
     userRole,
-    userEmail
+    userEmail,
+    competitorsData,
+    preloadCompetitors,
+    preloadProducts,
+    showAlert
   } = useTheme();
 
   const recommendations = recommendationsData;
-  const loading = recommendations.length === 0 && loadingRecommendations;
+  const loading = recommendations.length === 0 && (loadingRecommendations || !competitorsData);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,14 +52,18 @@ export default function RecommendationsPage() {
 
   const fetchData = async () => {
     try {
-      await preloadRecommendations(true);
+      await Promise.all([
+        preloadRecommendations(true),
+        preloadCompetitors(true),
+        preloadProducts(true)
+      ]);
     } catch (err) {
       console.error('Error fetching recommendations:', err);
     }
   };
 
   useEffect(() => {
-    if (recommendations.length === 0) {
+    if (recommendations.length === 0 || !competitorsData) {
       fetchData();
     }
   }, []);
@@ -105,12 +113,12 @@ export default function RecommendationsPage() {
       });
 
       if (res.ok) {
-        alert('Pricing engine recalculation complete! New recommendations generated.');
+        showAlert('Recalculation Complete', 'Pricing engine recalculation complete! New recommendations generated.', 'success');
         fetchData();
         setSelectedRec(null);
       } else {
         const data = await res.json();
-        alert(`Error: ${data.error}`);
+        showAlert('Recalculation Error', data.error || 'Failed to recalculate pricing recommendations.', 'error');
       }
     } catch (err) {
       console.error('Error recalculating:', err);
@@ -129,13 +137,13 @@ export default function RecommendationsPage() {
       });
 
       if (res.ok) {
-        alert(`Price change successfully ${action}d!`);
+        showAlert('Action Successful', `Price change successfully ${action}d!`, 'success');
         setReviewerNotes('');
         setSelectedRec(null);
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Action failed: ${data.error}`);
+        showAlert('Action Failed', data.error || `Failed to ${action} recommendation.`, 'error');
       }
     } catch (err) {
       console.error(`Error processing ${action}:`, err);
@@ -365,7 +373,7 @@ export default function RecommendationsPage() {
                         onClick={() => handlePageChange(page)}
                         className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           page === currentPage
-                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                            ? 'bg-indigo-600 text-white shadow-md'
                             : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
                         }`}
                       >
@@ -460,6 +468,30 @@ export default function RecommendationsPage() {
                 {selectedRec.explanation.summary}
               </p>
             </div>
+
+            {/* Tracked Competitor Prices Bullet Points */}
+            {(() => {
+              const competitorFeeds = competitorsData?.competitorProducts?.filter(
+                (cp: any) => cp.productId === selectedRec.productId
+              ) || [];
+              return (
+                <div className="space-y-2.5 text-left bg-slate-950/20 p-3.5 rounded-xl border border-slate-800/40">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Competitor Pricing</span>
+                  {competitorFeeds.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">No active competitor feeds tracked for this product.</p>
+                  ) : (
+                    <ul className="space-y-1.5 list-disc pl-4">
+                      {competitorFeeds.map((feed: any) => (
+                        <li key={feed.id} className="text-xs text-slate-350">
+                          <span className="font-bold text-slate-300">{feed.competitorName}</span>: {feed.latestPrice !== null ? `₹${feed.latestPrice.toFixed(2)}` : 'No price data'}
+                          {feed.competitorSku && <span className="text-[10px] text-slate-500 ml-1.5 font-mono">({feed.competitorSku})</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Contributing factors */}
             <div className="space-y-2 text-left">

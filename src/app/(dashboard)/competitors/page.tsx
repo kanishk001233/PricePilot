@@ -43,7 +43,9 @@ export default function CompetitorsPage() {
     productsData,
     loadingProducts,
     preloadProducts,
-    userRole
+    userRole,
+    showAlert,
+    showConfirm
   } = useTheme();
 
   const competitors = competitorsData?.competitors || [];
@@ -122,11 +124,11 @@ export default function CompetitorsPage() {
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Override failed: ${data.error}`);
+        showAlert('Override Failed', data.error, 'error');
       }
     } catch (err) {
       console.error('Price override error:', err);
-      alert('An error occurred while saving the price override.');
+      showAlert('Error', 'An error occurred while saving the price override.', 'error');
     }
   };
 
@@ -221,11 +223,11 @@ export default function CompetitorsPage() {
       const res = await fetch('/api/competitor-prices/sync', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        alert(`Sync success! Scanned ${data.scannedCount} items, generated ${data.snapshotsCreated} pricing logs, triggered ${data.alertsTriggered} alerts.`);
+        showAlert('Sync Successful', `Scanned ${data.scannedCount} items, generated ${data.snapshotsCreated} pricing logs, triggered ${data.alertsTriggered} alerts.`, 'success');
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Sync failed: ${data.error}`);
+        showAlert('Sync Failed', data.error, 'error');
       }
     } catch (err) {
       console.error('Sync error:', err);
@@ -247,7 +249,7 @@ export default function CompetitorsPage() {
         await fetchData();
       } else {
         const data = await res.json();
-        alert(`Sync Error: ${data.error || 'Failed to sync product prices'}`);
+        showAlert('Sync Error', data.error || 'Failed to sync product prices', 'error');
       }
     } catch (err) {
       console.error('Error syncing product competitor prices:', err);
@@ -257,25 +259,29 @@ export default function CompetitorsPage() {
   };
 
   const handleDeleteFeed = async (feedId: string) => {
-    if (confirm("Are you sure you want to stop tracking this competitor feed?")) {
-      try {
-        const res = await fetch('/api/competitors', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: feedId })
-        });
-        if (res.ok) {
-          alert('Competitor feed deleted successfully!');
-          fetchData();
-        } else {
-          const data = await res.json();
-          alert(`Error: ${data.error || 'Failed to delete feed'}`);
+    showConfirm(
+      "Stop Tracking",
+      "Are you sure you want to stop tracking this competitor feed?",
+      async () => {
+        try {
+          const res = await fetch('/api/competitors', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: feedId })
+          });
+          if (res.ok) {
+            showAlert('Feed Deleted', 'Competitor feed deleted successfully!', 'success');
+            fetchData();
+          } else {
+            const data = await res.json();
+            showAlert('Delete Error', data.error || 'Failed to delete feed', 'error');
+          }
+        } catch (err) {
+          console.error('Delete feed error:', err);
+          showAlert('Unexpected Error', 'An unexpected error occurred.', 'error');
         }
-      } catch (err) {
-        console.error('Delete feed error:', err);
-        alert('An unexpected error occurred.');
       }
-    }
+    );
   };
 
   const handleDiscover = async () => {
@@ -284,11 +290,11 @@ export default function CompetitorsPage() {
       const res = await fetch('/api/competitor-prices/discover', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        alert(`Discovery complete! Searched ${data.productsSearched} products, found ${data.newlyDiscoveredCount} new competitor feeds.`);
+        showAlert('Discovery Complete', `Searched ${data.productsSearched} products, found ${data.newlyDiscoveredCount} new competitor feeds.`, 'success');
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Discovery failed: ${data.error}`);
+        showAlert('Discovery Failed', data.error, 'error');
       }
     } catch (err) {
       console.error('Discovery error:', err);
@@ -319,11 +325,11 @@ export default function CompetitorsPage() {
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Failed to start tracking: ${data.error}`);
+        showAlert('Tracking Failed', data.error, 'error');
       }
     } catch (err) {
       console.error('Add tracking error:', err);
-      alert('An error occurred while trying to connect the competitor feed.');
+      showAlert('Error', 'An error occurred while trying to connect the competitor feed.', 'error');
     }
   };
 
@@ -660,7 +666,7 @@ export default function CompetitorsPage() {
                     onClick={() => handlePageChange(page)}
                     className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       page === currentPage
-                        ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                        ? 'bg-indigo-600 text-white shadow-md'
                         : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
                     }`}
                   >

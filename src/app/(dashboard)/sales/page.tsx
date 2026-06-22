@@ -18,7 +18,7 @@ import {
 import { useTheme } from '@/lib/ThemeProvider';
 
 export default function SalesPage() {
-  const { salesData, loadingSales, preloadSales } = useTheme();
+  const { salesData, loadingSales, preloadSales, showAlert, showConfirm } = useTheme();
   const salesLogs = salesData;
   const loading = salesLogs.length === 0 && loadingSales;
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,36 +28,39 @@ export default function SalesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loadedPages, setLoadedPages] = useState<number[]>([1]);
   const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
-  const pageSize = 10;
+  const pageSize = 9;
 
   useEffect(() => {
     preloadSales(true);
   }, []);
 
-  const handleReturn = async (transactionId: string) => {
-    if (!confirm('Are you sure you want to return this product? This will restore the quantity back to catalog inventory.')) {
-      return;
-    }
-    setReturningId(transactionId);
-    try {
-      const res = await fetch('/api/products/return', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactionId })
-      });
-      if (res.ok) {
-        alert('Product returned successfully! Inventory has been updated.');
-        await preloadSales(true);
-      } else {
-        const data = await res.json();
-        alert(`Error: ${data.error}`);
+  const handleReturn = (transactionId: string) => {
+    showConfirm(
+      'Confirm Product Return',
+      'Are you sure you want to return this product? This will restore the quantity back to catalog inventory.',
+      async () => {
+        setReturningId(transactionId);
+        try {
+          const res = await fetch('/api/products/return', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transactionId })
+          });
+          if (res.ok) {
+            showAlert('Return Success', 'Product returned successfully! Inventory has been updated.', 'success');
+            await preloadSales(true);
+          } else {
+            const data = await res.json();
+            showAlert('Return Failed', `Error: ${data.error}`, 'error');
+          }
+        } catch (err) {
+          console.error('Error returning product:', err);
+          showAlert('Return Error', 'Failed to return product.', 'error');
+        } finally {
+          setReturningId(null);
+        }
       }
-    } catch (err) {
-      console.error('Error returning product:', err);
-      alert('Failed to return product.');
-    } finally {
-      setReturningId(null);
-    }
+    );
   };
 
   // Filter local sales logs
@@ -185,7 +188,7 @@ export default function SalesPage() {
           </div>
         ) : (
           <>
-            <div className="divide-y divide-slate-800/80">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 text-left">
               {paginatedSales.map((log) => {
                 const isReturned = !!log.returned;
                 const transactionDate = new Date(log.transactionDate);
@@ -195,61 +198,95 @@ export default function SalesPage() {
                 return (
                   <div 
                     key={log.id} 
-                    className={`py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0 transition-all ${
-                      isReturned ? 'opacity-65 bg-slate-950/20 rounded-lg px-2.5 my-1 border border-dashed border-slate-800/40' : ''
+                    className={`bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:border-slate-700/60 transition-all ${
+                      isReturned ? 'opacity-65 bg-slate-950/20 border-dashed border-rose-950/40' : ''
                     }`}
                   >
-                    <div className="space-y-1.5 text-left flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`text-xs font-semibold ${isReturned ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-200'}`}>
-                          Sold {log.quantity} units of SKU {log.productSku} ({log.productName}) for ₹{log.revenue.toFixed(2)}.
-                        </span>
-                        {isReturned && (
-                          <span className="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wide uppercase bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30">
+                    <div className="space-y-3.5">
+                      {/* Card Header: Order Tag & Status */}
+                      <div className="flex justify-between items-center pb-2.5 border-b border-slate-850">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-slate-950 border border-slate-850 text-slate-400">
+                            <FileText className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-400 font-mono">ORDER #{log.id.slice(0, 8).toUpperCase()}</span>
+                        </div>
+                        {isReturned ? (
+                          <span className="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wide uppercase bg-rose-950/40 text-rose-400 border border-rose-900/10">
                             Returned
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wide uppercase bg-emerald-950/40 text-emerald-400 border border-emerald-900/10">
+                            Completed
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {transactionDate.toLocaleString()}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <User className="w-3.5 h-3.5" />
-                          Cashier: {log.cashierEmail}
-                        </span>
+                      {/* Product details */}
+                      <div className="space-y-1">
+                        <h4 className={`text-xs font-bold text-slate-200 line-clamp-2 ${isReturned ? 'line-through text-slate-500' : ''}`}>{log.productName}</h4>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-semibold font-mono">
+                          <span>SKU: {log.productSku}</span>
+                          <span>QTY: {log.quantity}</span>
+                        </div>
+                        <div className="pt-2 flex justify-between items-end">
+                          <div>
+                            <span className="text-[9px] text-slate-500 uppercase block font-semibold">Total Revenue</span>
+                            <span className={`text-sm font-black text-slate-200 ${isReturned ? 'line-through text-slate-500' : ''}`}>₹{log.revenue.toFixed(2)}</span>
+                          </div>
+                          <span className="text-[9.5px] text-slate-500">₹{(log.revenue / log.quantity).toFixed(2)} each</span>
+                        </div>
+                      </div>
+
+                      {/* Customer Details info block */}
+                      <div className="p-3 rounded-lg bg-slate-950/30 border border-slate-850/40 space-y-1.5">
+                        <span className="text-[9px] text-slate-500 font-bold block tracking-wider uppercase">Customer details</span>
+                        {log.customerName ? (
+                          <>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-350">
+                              <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span className="truncate">{log.customerName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                              <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span>{log.customerPhone}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                              <User className="w-3.5 h-3.5 text-slate-500 shrink-0" opacity={0.6} />
+                              <span className="truncate">{log.customerEmail}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-xs text-slate-550 italic">Walk-in Customer</span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      {/* Customer Details */}
-                      <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800/80 min-w-[200px] text-left space-y-1">
-                        <span className="text-[9px] text-slate-400 font-bold block tracking-wider uppercase">Customer Detail</span>
-                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{log.customerName}</p>
-                        <p className="text-[10px] text-slate-400">Phone: {log.customerPhone}</p>
-                        <p className="text-[10px] text-slate-400">Gmail: {log.customerEmail}</p>
+                    {/* Card Footer: Metadata and Return action */}
+                    <div className="pt-3 border-t border-slate-850 space-y-3">
+                      <div className="flex justify-between text-[9.5px] text-slate-500 font-mono">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {transactionDate.toLocaleDateString()}
+                        </span>
+                        <span className="truncate max-w-[140px]" title={`Cashier: ${log.cashierEmail}`}>Cashier: {log.cashierEmail.split('@')[0]}</span>
                       </div>
 
-                      {/* Actions (Return Button) */}
-                      <div className="self-center">
-                        <button
-                          disabled={!canReturn || returningId === log.id}
-                          onClick={() => handleReturn(log.id)}
-                          className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-                            isReturned
-                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-transparent cursor-not-allowed'
-                              : !canReturn
-                                ? 'bg-slate-100 dark:bg-slate-850/40 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed'
-                                : 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 active:scale-95 shadow-sm'
-                          }`}
-                          title={isReturned ? "Already returned" : !canReturn ? "Returned or exceeds 3 days return policy" : "Process product return"}
-                        >
-                          <RotateCcw className={`w-3.5 h-3.5 ${returningId === log.id ? 'animate-spin' : ''}`} />
-                          <span>{isReturned ? 'Returned' : 'Return Item'}</span>
-                        </button>
-                      </div>
+                      <button
+                        disabled={!canReturn || returningId === log.id}
+                        onClick={() => handleReturn(log.id)}
+                        className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                          isReturned
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-transparent cursor-not-allowed'
+                            : !canReturn
+                              ? 'bg-slate-100 dark:bg-slate-850/40 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed'
+                              : 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 active:scale-95 shadow-sm'
+                        }`}
+                        title={isReturned ? "Already returned" : !canReturn ? "Returned or exceeds 3 days return policy" : "Process product return"}
+                      >
+                        <RotateCcw className={`w-3.5 h-3.5 ${returningId === log.id ? 'animate-spin' : ''}`} />
+                        <span>{isReturned ? 'Returned' : 'Return Item'}</span>
+                      </button>
                     </div>
                   </div>
                 );

@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   
-  const { theme, toggleTheme, user: preloadedUser, loadingUser } = useTheme();
+  const { theme, toggleTheme, user: preloadedUser, loadingUser, showAlert } = useTheme();
   const [user, setUser] = useState<{ email: string; role: string; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -163,10 +163,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (res.ok) {
         await fetchNotifications();
         // Log synced successfully
-        alert('Competitor intelligence sync completed! New pricing snapshots generated.');
+        showAlert('Intelligence Synced', 'Competitor intelligence sync completed! New pricing snapshots generated.', 'success');
       } else {
         const data = await res.json();
-        alert(`Sync failed: ${data.error}`);
+        showAlert('Sync Failed', data.error || 'Failed to sync competitor prices.', 'error');
       }
     } catch (err) {
       console.error('Sync error:', err);

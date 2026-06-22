@@ -30,7 +30,9 @@ export default function ProductsPage() {
     categoriesData, 
     loadingCategories, 
     preloadCategories,
-    userRole
+    userRole,
+    showAlert,
+    showConfirm
   } = useTheme();
 
   const products = productsData;
@@ -41,6 +43,33 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [isTorchOn, setIsTorchOn] = useState(false);
+
+  const toggleTorch = (selector: string) => {
+    try {
+      const video = document.querySelector(`${selector} video`) as HTMLVideoElement;
+      if (video && video.srcObject) {
+        const stream = video.srcObject as MediaStream;
+        const track = stream.getVideoTracks()[0];
+        if (track && typeof track.getCapabilities === 'function') {
+          const capabilities = track.getCapabilities() as any;
+          if (capabilities && capabilities.torch) {
+            const constraints = track.getConstraints() as any;
+            const currentTorch = constraints.advanced?.find((c: any) => 'torch' in c)?.torch || false;
+            const zoomConstraint = constraints.advanced?.find((c: any) => 'zoom' in c)?.zoom || 1;
+            track.applyConstraints({
+              advanced: [{ zoom: zoomConstraint, torch: !currentTorch } as any]
+            });
+            setIsTorchOn(!currentTorch);
+          } else {
+            alert("Flashlight (torch) is not supported on this camera/device.");
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to toggle camera flash:", err);
+    }
+  };
   
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -86,6 +115,29 @@ export default function ProductsPage() {
     }
     // Default cursor focus for search box
     searchInputRef.current?.focus();
+
+    const keepFocus = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'SELECT' || 
+        target.tagName === 'BUTTON' || 
+        target.tagName === 'TEXTAREA' ||
+        target.closest('button') ||
+        target.closest('a')
+      ) {
+        return;
+      }
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 0);
+    };
+
+    document.addEventListener("click", keepFocus);
+
+    return () => {
+      document.removeEventListener("click", keepFocus);
+    };
   }, []);
 
   useEffect(() => {
@@ -133,7 +185,7 @@ export default function ProductsPage() {
         resetForm();
       } else {
         const data = await res.json();
-        alert(`Error: ${data.error}`);
+        showAlert('Product Error', data.error || 'Failed to create product', 'error');
       }
     } catch (err) {
       console.error('Create product error:', err);
@@ -171,7 +223,7 @@ export default function ProductsPage() {
         resetForm();
       } else {
         const data = await res.json();
-        alert(`Error: ${data.error}`);
+        showAlert('Product Error', data.error || 'Failed to update product', 'error');
       }
     } catch (err) {
       console.error('Update product error:', err);
@@ -179,19 +231,23 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product? All related snapshots will be lost.')) return;
-    
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchData();
-      } else {
-        const data = await res.json();
-        alert(`Error: ${data.error}`);
+    showConfirm(
+      "Delete Product",
+      "Are you sure you want to delete this product? All related snapshots will be lost.",
+      async () => {
+        try {
+          const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            fetchData();
+          } else {
+            const data = await res.json();
+            showAlert('Delete Error', data.error || 'Failed to delete product', 'error');
+          }
+        } catch (err) {
+          console.error('Delete product error:', err);
+        }
       }
-    } catch (err) {
-      console.error('Delete product error:', err);
-    }
+    );
   };
 
   // CSV Import parser simulation
@@ -232,11 +288,11 @@ export default function ProductsPage() {
         });
 
         if (res.ok) {
-          alert(`CSV imported successfully! Background competitor matching initiated.`);
+          showAlert('CSV Imported', 'CSV imported successfully! Background competitor matching initiated.', 'success');
           fetchData();
         } else {
           const data = await res.json();
-          alert(`CSV upload failed: ${data.error}`);
+          showAlert('Import Failed', data.error || 'Failed to import CSV.', 'error');
         }
       } catch (err) {
         console.error('Error uploading CSV:', err);
@@ -431,7 +487,7 @@ export default function ProductsPage() {
             placeholder="Search by name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-10 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-600 focus:border-indigo-650 focus:outline-none transition-all"
+            className="w-full pl-9 pr-10 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-600 focus:border-indigo-600 focus:outline-none transition-all"
             autoFocus
           />
           <button
@@ -448,6 +504,7 @@ export default function ProductsPage() {
                     Q.offDetected();
                   } catch (e) {}
                   (window as any)._searchHtml5QrcodeScanner = null;
+                  setIsTorchOn(false);
                   const scanContainer = document.getElementById('search-qr-reader-wrapper');
                   if (scanContainer) {
                     scanContainer.style.display = 'none';
@@ -495,7 +552,7 @@ export default function ProductsPage() {
                   }
                   Quagga.start();
 
-                  // Apply hardware zoom fix for macro thresholds on mobile devices
+                  // Apply hardware zoom and torch fix on mobile devices
                   setTimeout(() => {
                     try {
                       const video = document.querySelector("#search-qr-reader video") as HTMLVideoElement;
@@ -504,18 +561,26 @@ export default function ProductsPage() {
                         const track = stream.getVideoTracks()[0];
                         if (track && typeof track.getCapabilities === 'function') {
                           const capabilities = track.getCapabilities() as any;
-                          if (capabilities && capabilities.zoom) {
+                          
+                          const constraints: any = {};
+                          if (capabilities.zoom) {
                             const maxZoom = capabilities.zoom.max || 1;
                             const minZoom = capabilities.zoom.min || 1;
-                            const targetZoom = maxZoom > 1 ? Math.min(maxZoom, 2) : minZoom;
-                            track.applyConstraints({
-                              advanced: [{ zoom: targetZoom } as any]
-                            });
+                            constraints.zoom = maxZoom > 1 ? Math.min(maxZoom, 2) : minZoom;
                           }
+                          
+                          if (capabilities.torch) {
+                            constraints.torch = true;
+                            setIsTorchOn(true);
+                          }
+                          
+                          track.applyConstraints({
+                            advanced: [constraints]
+                          });
                         }
                       }
                     } catch (zoomErr) {
-                      console.warn("Failed to apply hardware zoom:", zoomErr);
+                      console.warn("Failed to apply hardware zoom/torch:", zoomErr);
                     }
                   }, 800);
                 });
@@ -532,6 +597,7 @@ export default function ProductsPage() {
                       Quagga.offDetected();
                     } catch (e) {}
                     (window as any)._searchHtml5QrcodeScanner = null;
+                    setIsTorchOn(false);
                     if (scanContainer) {
                       scanContainer.style.display = 'none';
                       scanContainer.classList.add('hidden');
@@ -584,28 +650,45 @@ export default function ProductsPage() {
         <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-200">Scan UPC Barcode</h3>
-            <button
-              type="button"
-              onClick={async () => {
-                if ((window as any)._searchHtml5QrcodeScanner) {
-                  try {
-                    const Q = (window as any)._searchHtml5QrcodeScanner;
-                    Q.stop();
-                    Q.offDetected();
-                  } catch (e) {}
-                  (window as any)._searchHtml5QrcodeScanner = null;
-                }
-                const scanContainer = document.getElementById('search-qr-reader-wrapper');
-                if (scanContainer) {
-                  scanContainer.style.display = 'none';
-                  scanContainer.classList.add('hidden');
-                }
-              }}
-              className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
-              title="Close Scanner"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => toggleTorch("#search-qr-reader")}
+                className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center ${
+                  isTorchOn 
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' 
+                    : 'bg-slate-950/40 border-transparent text-slate-400 hover:text-white hover:border-slate-700'
+                }`}
+                title={isTorchOn ? "Turn off Flash" : "Turn on Flash"}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if ((window as any)._searchHtml5QrcodeScanner) {
+                    try {
+                      const Q = (window as any)._searchHtml5QrcodeScanner;
+                      Q.stop();
+                      Q.offDetected();
+                    } catch (e) {}
+                    (window as any)._searchHtml5QrcodeScanner = null;
+                  }
+                  setIsTorchOn(false);
+                  const scanContainer = document.getElementById('search-qr-reader-wrapper');
+                  if (scanContainer) {
+                    scanContainer.style.display = 'none';
+                    scanContainer.classList.add('hidden');
+                  }
+                }}
+                className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+                title="Close Scanner"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <div 
             id="search-qr-reader" 
@@ -813,7 +896,7 @@ export default function ProductsPage() {
                         onClick={() => handlePageChange(page)}
                         className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           page === currentPage
-                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-650/10'
+                            ? 'bg-indigo-600 text-white shadow-md'
                             : 'border border-slate-800 text-slate-400 hover:bg-slate-950'
                         }`}
                       >
@@ -874,17 +957,15 @@ export default function ProductsPage() {
                       type="button"
                       onClick={async () => {
                         try {
-                          // Dynamic import of Html5Qrcode to avoid loading during SSR
-                          const { Html5Qrcode } = await import('html5-qrcode');
-                          
                           // Toggle scanner state
                           if ((window as any)._html5QrcodeScanner) {
+                            const Q = (window as any)._html5QrcodeScanner;
                             try {
-                              const Q = (window as any)._html5QrcodeScanner;
                               Q.stop();
                               Q.offDetected();
                             } catch (e) {}
                             (window as any)._html5QrcodeScanner = null;
+                            setIsTorchOn(false);
                             const scanContainer = document.getElementById('sku-qr-reader-wrapper');
                             if (scanContainer) {
                               scanContainer.style.display = 'none';
@@ -932,7 +1013,7 @@ export default function ProductsPage() {
                               }
                               Quagga.start();
 
-                              // Apply hardware zoom fix for macro thresholds on mobile devices
+                              // Apply hardware zoom and torch fix on mobile devices
                               setTimeout(() => {
                                 try {
                                   const video = document.querySelector("#sku-qr-reader video") as HTMLVideoElement;
@@ -941,18 +1022,26 @@ export default function ProductsPage() {
                                     const track = stream.getVideoTracks()[0];
                                     if (track && typeof track.getCapabilities === 'function') {
                                       const capabilities = track.getCapabilities() as any;
-                                      if (capabilities && capabilities.zoom) {
+                                      
+                                      const constraints: any = {};
+                                      if (capabilities.zoom) {
                                         const maxZoom = capabilities.zoom.max || 1;
                                         const minZoom = capabilities.zoom.min || 1;
-                                        const targetZoom = maxZoom > 1 ? Math.min(maxZoom, 2) : minZoom;
-                                        track.applyConstraints({
-                                          advanced: [{ zoom: targetZoom } as any]
-                                        });
+                                        constraints.zoom = maxZoom > 1 ? Math.min(maxZoom, 2) : minZoom;
                                       }
+                                      
+                                      if (capabilities.torch) {
+                                        constraints.torch = true;
+                                        setIsTorchOn(true);
+                                      }
+                                      
+                                      track.applyConstraints({
+                                        advanced: [constraints]
+                                      });
                                     }
                                   }
                                 } catch (zoomErr) {
-                                  console.warn("Failed to apply hardware zoom:", zoomErr);
+                                  console.warn("Failed to apply hardware zoom/torch:", zoomErr);
                                 }
                               }, 800);
                             });
@@ -969,6 +1058,7 @@ export default function ProductsPage() {
                                   Quagga.offDetected();
                                 } catch (e) {}
                                 (window as any)._html5QrcodeScanner = null;
+                                setIsTorchOn(false);
                                 if (scanContainer) {
                                   scanContainer.style.display = 'none';
                                   scanContainer.classList.add('hidden');
@@ -994,34 +1084,51 @@ export default function ProductsPage() {
                     <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-slate-200">Scan SKU Barcode</h3>
-                        <button
-                          type="button"
-                        onClick={async () => {
-                          if ((window as any)._html5QrcodeScanner) {
-                            try {
-                              const Q = (window as any)._html5QrcodeScanner;
-                              Q.stop();
-                              Q.offDetected();
-                            } catch (e) {}
-                              (window as any)._html5QrcodeScanner = null;
-                          }
-                          const wrapper = document.getElementById('sku-qr-reader-wrapper');
-                          if (wrapper) {
-                            wrapper.style.display = 'none';
-                            wrapper.classList.add('hidden');
-                          }
-                        }}
-                        className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
-                        title="Close Scanner"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                    
-                    <div 
-                      id="sku-qr-reader" 
-                      className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square relative"
-                    />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleTorch("#sku-qr-reader")}
+                            className={`p-1.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center ${
+                              isTorchOn 
+                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' 
+                                : 'bg-slate-950/40 border-transparent text-slate-400 hover:text-white hover:border-slate-700'
+                            }`}
+                            title={isTorchOn ? "Turn off Flash" : "Turn on Flash"}
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if ((window as any)._html5QrcodeScanner) {
+                                try {
+                                  const Q = (window as any)._html5QrcodeScanner;
+                                  Q.stop();
+                                  Q.offDetected();
+                                } catch (e) {}
+                                (window as any)._html5QrcodeScanner = null;
+                              }
+                              setIsTorchOn(false);
+                              const wrapper = document.getElementById('sku-qr-reader-wrapper');
+                              if (wrapper) {
+                                wrapper.style.display = 'none';
+                                wrapper.classList.add('hidden');
+                              }
+                            }}
+                            className="p-1.5 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-700 bg-slate-950/40"
+                            title="Close Scanner"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div 
+                        id="sku-qr-reader" 
+                        className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square relative"
+                      />
                     </div>
                   </div>
                 </div>
