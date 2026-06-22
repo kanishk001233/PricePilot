@@ -41,11 +41,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true);
+    preloadDashboard(true);
   }, []);
 
   // For visual consistency, map the context state to local variables
   const data = dashboardData;
-  const loading = loadingDashboard;
+  const loading = !data && loadingDashboard;
   const error = dashboardError;
 
   if (loading || !mounted) {

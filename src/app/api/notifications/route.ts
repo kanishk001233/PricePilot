@@ -42,3 +42,29 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = getSession(req);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Notification ID required' }, { status: 400 });
+    }
+
+    const success = await db.deleteNotification(id);
+    if (success) {
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
+  } catch (error) {
+    console.error('DELETE notifications error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

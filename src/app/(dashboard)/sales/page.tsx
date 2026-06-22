@@ -15,9 +15,12 @@ import {
   RotateCcw
 } from 'lucide-react';
 
+import { useTheme } from '@/lib/ThemeProvider';
+
 export default function SalesPage() {
-  const [salesLogs, setSalesLogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { salesData, loadingSales, preloadSales } = useTheme();
+  const salesLogs = salesData;
+  const loading = salesLogs.length === 0 && loadingSales;
   const [searchQuery, setSearchQuery] = useState('');
   const [returningId, setReturningId] = useState<string | null>(null);
 
@@ -27,22 +30,8 @@ export default function SalesPage() {
   const [pageTransitionLoading, setPageTransitionLoading] = useState(false);
   const pageSize = 10;
 
-  const fetchSalesLogs = async () => {
-    try {
-      const res = await fetch('/api/products/sales');
-      if (res.ok) {
-        const logsData = await res.json();
-        setSalesLogs(logsData);
-      }
-    } catch (err) {
-      console.error('Error fetching sales history logs:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSalesLogs();
+    preloadSales(true);
   }, []);
 
   const handleReturn = async (transactionId: string) => {
@@ -58,7 +47,7 @@ export default function SalesPage() {
       });
       if (res.ok) {
         alert('Product returned successfully! Inventory has been updated.');
-        await fetchSalesLogs();
+        await preloadSales(true);
       } else {
         const data = await res.json();
         alert(`Error: ${data.error}`);

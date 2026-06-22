@@ -801,3 +801,25 @@ input[type="range"]::-moz-range-thumb:hover {
   color: #000000 !important;
 }
 
+/* Quagga2 Scanner Styles */
+#home-qr-reader, #search-qr-reader, #sku-qr-reader {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #000;
+  border-radius: 0.75rem;
+}
+#home-qr-reader video, #search-qr-reader video, #sku-qr-reader video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#home-qr-reader canvas, #search-qr-reader canvas, #sku-qr-reader canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+

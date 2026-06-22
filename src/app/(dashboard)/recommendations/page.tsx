@@ -24,14 +24,13 @@ export default function RecommendationsPage() {
   const { 
     recommendationsData, 
     loadingRecommendations, 
-    preloadRecommendations 
+    preloadRecommendations,
+    userRole,
+    userEmail
   } = useTheme();
 
   const recommendations = recommendationsData;
-  const loading = loadingRecommendations;
-
-  const [userRole, setUserRole] = useState<string>('Viewer');
-  const [userEmail, setUserEmail] = useState<string>('');
+  const loading = recommendations.length === 0 && loadingRecommendations;
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,21 +48,16 @@ export default function RecommendationsPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch session
-      const meRes = await fetch('/api/auth/me');
-      if (meRes.ok) {
-        const meData = await meRes.json();
-        setUserRole(meData.user.role);
-        setUserEmail(meData.user.email);
-      }
-      await preloadRecommendations();
+      await preloadRecommendations(true);
     } catch (err) {
       console.error('Error fetching recommendations:', err);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    if (recommendations.length === 0) {
+      fetchData();
+    }
   }, []);
 
   useEffect(() => {

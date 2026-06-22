@@ -7,35 +7,47 @@ type Theme = 'dark' | 'light';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  user: { email: string; role: string; name: string } | null;
+  loadingUser: boolean;
+  preloadUserSession: () => Promise<void>;
   dashboardData: any;
   loadingDashboard: boolean;
   dashboardError: string;
-  preloadDashboard: () => void;
+  preloadDashboard: (silent?: boolean) => Promise<void>;
   productsData: any[];
   loadingProducts: boolean;
   productsError: string;
-  preloadProducts: () => Promise<void>;
+  preloadProducts: (silent?: boolean) => Promise<void>;
   categoriesData: any[];
   loadingCategories: boolean;
   categoriesError: string;
-  preloadCategories: () => Promise<void>;
+  preloadCategories: (silent?: boolean) => Promise<void>;
   competitorsData: any;
   loadingCompetitors: boolean;
   competitorsError: string;
-  preloadCompetitors: () => Promise<void>;
+  preloadCompetitors: (silent?: boolean) => Promise<void>;
   recommendationsData: any[];
   loadingRecommendations: boolean;
   recommendationsError: string;
-  preloadRecommendations: () => Promise<void>;
+  preloadRecommendations: (silent?: boolean) => Promise<void>;
+  salesData: any[];
+  loadingSales: boolean;
+  salesError: string;
+  preloadSales: (silent?: boolean) => Promise<void>;
+  userRole: string;
+  userEmail: string;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'dark',
   toggleTheme: () => {},
+  user: null,
+  loadingUser: true,
+  preloadUserSession: async () => {},
   dashboardData: null,
   loadingDashboard: true,
   dashboardError: '',
-  preloadDashboard: () => {},
+  preloadDashboard: async () => {},
   productsData: [],
   loadingProducts: true,
   productsError: '',
@@ -52,6 +64,12 @@ const ThemeContext = createContext<ThemeContextType>({
   loadingRecommendations: true,
   recommendationsError: '',
   preloadRecommendations: async () => {},
+  salesData: [],
+  loadingSales: true,
+  salesError: '',
+  preloadSales: async () => {},
+  userRole: 'Viewer',
+  userEmail: '',
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -59,6 +77,10 @@ export const useTheme = () => useContext(ThemeContext);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
+
+  // Global Session State
+  const [user, setUser] = useState<{ email: string; role: string; name: string } | null>(null);
+  const [loadingUser, setLoadingUser] = useState<boolean>(true);
 
   // Prefetch States
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -73,7 +95,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
   const [categoriesError, setCategoriesError] = useState<string>('');
 
-  const [competitorsData, setCompetitorsData] = useState<any[]>([]);
+  const [competitorsData, setCompetitorsData] = useState<any>(null);
   const [loadingCompetitors, setLoadingCompetitors] = useState<boolean>(true);
   const [competitorsError, setCompetitorsError] = useState<string>('');
 
@@ -81,9 +103,35 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [loadingRecommendations, setLoadingRecommendations] = useState<boolean>(true);
   const [recommendationsError, setRecommendationsError] = useState<string>('');
 
-  const preloadDashboard = async () => {
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [loadingSales, setLoadingSales] = useState<boolean>(true);
+  const [salesError, setSalesError] = useState<string>('');
+
+  const preloadUserSession = async () => {
     try {
-      setLoadingDashboard(true);
+      setLoadingUser(true);
+      const meRes = await fetch('/api/auth/me');
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        if (meData.authenticated) {
+          setUser(meData.user);
+        } else {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      console.error('Error prefetching user session:', err);
+      setUser(null);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  const preloadDashboard = async (silent = false) => {
+    try {
+      if (!silent) setLoadingDashboard(true);
       const res = await fetch('/api/dashboard/summary');
       if (res.ok) {
         const summaryData = await res.json();
@@ -100,9 +148,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const preloadProducts = async () => {
+  const preloadProducts = async (silent = false) => {
     try {
-      setLoadingProducts(true);
+      if (!silent) setLoadingProducts(true);
       const res = await fetch('/api/products');
       if (res.ok) {
         const data = await res.json();
@@ -118,9 +166,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const preloadCategories = async () => {
+  const preloadCategories = async (silent = false) => {
     try {
-      setLoadingCategories(true);
+      if (!silent) setLoadingCategories(true);
       const res = await fetch('/api/categories');
       if (res.ok) {
         const data = await res.json();
@@ -136,9 +184,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const preloadCompetitors = async () => {
+  const preloadCompetitors = async (silent = false) => {
     try {
-      setLoadingCompetitors(true);
+      if (!silent) setLoadingCompetitors(true);
       const res = await fetch('/api/competitors');
       if (res.ok) {
         const data = await res.json();
@@ -154,9 +202,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const preloadRecommendations = async () => {
+  const preloadRecommendations = async (silent = false) => {
     try {
-      setLoadingRecommendations(true);
+      if (!silent) setLoadingRecommendations(true);
       const res = await fetch('/api/pricing/recommend');
       if (res.ok) {
         const data = await res.json();
@@ -169,6 +217,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setRecommendationsError('Network connection error.');
     } finally {
       setLoadingRecommendations(false);
+    }
+  };
+
+  const preloadSales = async (silent = false) => {
+    try {
+      if (!silent) setLoadingSales(true);
+      const res = await fetch('/api/products/sales');
+      if (res.ok) {
+        const data = await res.json();
+        setSalesData(data);
+      } else {
+        setSalesError('Failed to fetch sales logs.');
+      }
+    } catch (err) {
+      console.error('Error prefetching sales:', err);
+      setSalesError('Network connection error.');
+    } finally {
+      setLoadingSales(false);
     }
   };
 
@@ -195,14 +261,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      // Trigger all prefetching operations in parallel
-      preloadDashboard();
-      preloadProducts();
-      preloadCategories();
-      preloadCompetitors();
-      preloadRecommendations();
+      preloadUserSession();
     }
   }, [mounted]);
+
+  // Load all dashboard/app data immediately in the background once the user is logged in
+  useEffect(() => {
+    if (user) {
+      preloadDashboard(true);
+      preloadProducts(true);
+      preloadCategories(true);
+      preloadCompetitors(true);
+      preloadRecommendations(true);
+      preloadSales(true);
+    }
+  }, [user]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -217,6 +290,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider value={{ 
       theme, 
       toggleTheme, 
+      user,
+      loadingUser,
+      preloadUserSession,
       dashboardData, 
       loadingDashboard, 
       dashboardError, 
@@ -236,7 +312,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       recommendationsData,
       loadingRecommendations,
       recommendationsError,
-      preloadRecommendations
+      preloadRecommendations,
+      salesData,
+      loadingSales,
+      salesError,
+      preloadSales,
+      userRole: user?.role || 'Viewer',
+      userEmail: user?.email || '',
     }}>
       {children}
     </ThemeContext.Provider>

@@ -42,17 +42,17 @@ export default function CompetitorsPage() {
     preloadCompetitors,
     productsData,
     loadingProducts,
-    preloadProducts
+    preloadProducts,
+    userRole
   } = useTheme();
 
   const competitors = competitorsData?.competitors || [];
   const competitorProducts = competitorsData?.competitorProducts || [];
   const products = productsData;
-  const loading = loadingCompetitors || loadingProducts;
+  const loading = competitorProducts.length === 0 && (loadingCompetitors || loadingProducts);
 
   const [syncing, setSyncing] = useState(false);
   const [discovering, setDiscovering] = useState(false);
-  const [userRole, setUserRole] = useState<string>('Viewer');
   const [syncingProductId, setSyncingProductId] = useState<string | null>(null);
   const [activeSyncs, setActiveSyncs] = useState<string[]>([]);
   
@@ -176,20 +176,16 @@ export default function CompetitorsPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch session
-      const meRes = await fetch('/api/auth/me');
-      if (meRes.ok) {
-        const meData = await meRes.json();
-        setUserRole(meData.user.role);
-      }
-      await Promise.all([preloadProducts(), preloadCompetitors()]);
+      await Promise.all([preloadProducts(true), preloadCompetitors(true)]);
     } catch (err) {
       console.error('Error fetching competitors:', err);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    if (competitorProducts.length === 0) {
+      fetchData();
+    }
   }, []);
 
   useEffect(() => {

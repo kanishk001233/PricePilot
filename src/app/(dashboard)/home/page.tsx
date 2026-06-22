@@ -24,7 +24,7 @@ export default function HomePage() {
   const { productsData, loadingProducts, preloadProducts } = useTheme();
 
   const products = productsData;
-  const loading = loadingProducts;
+  const loading = products.length === 0 && loadingProducts;
   
   // Search and Scanner States
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,14 +49,18 @@ export default function HomePage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      await preloadProducts();
+      await preloadProducts(true);
     } catch (err) {
       console.error('Error fetching products:', err);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    if (products.length === 0) {
+      fetchProducts();
+    }
+    // Set cursor focus by default for external scanner integrations
+    barcodeInputRef.current?.focus();
   }, []);
 
   // Keyboard Scanner listener (simulating barcode hardware scanner, which dumps text and presses Enter)
@@ -219,11 +223,8 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column: Barcode Scanner & Catalog */}
-        <div className="lg:col-span-8 space-y-6 order-2 lg:order-none">
-          
-          {/* Barcode Scanner Input Box */}
-          <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg space-y-4">
+        {/* Barcode Scanner Input Box */}
+        <div className="lg:col-span-8 order-1 lg:order-none bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-indigo-950/60 text-indigo-400 border border-indigo-900/30">
                 <Scan className="w-5 h-5 animate-pulse" />
@@ -249,13 +250,14 @@ export default function HomePage() {
                   type="button"
                   onClick={async () => {
                     try {
-                      // Dynamic import of Html5Qrcode to avoid loading during SSR
-                      const { Html5Qrcode } = await import('html5-qrcode');
+                      const Quagga = (await import('@ericblade/quagga2')).default;
                       
                       // Toggle scanner state
                       if ((window as any)._homeHtml5QrcodeScanner) {
                         try {
-                          (window as any)._homeHtml5QrcodeScanner.reset();
+                          const Q = (window as any)._homeHtml5QrcodeScanner;
+                          Q.stop();
+                          Q.offDetected();
                         } catch (e) {}
                         (window as any)._homeHtml5QrcodeScanner = null;
                         const scanContainer = document.getElementById('home-qr-reader-wrapper');
@@ -272,60 +274,92 @@ export default function HomePage() {
                         scanContainer.classList.remove('hidden');
                       }
 
-                      const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } = await import('@zxing/library');
-                      const formats = [
-                        BarcodeFormat.UPC_A,
-                        BarcodeFormat.UPC_E,
-                        BarcodeFormat.EAN_13,
-                        BarcodeFormat.EAN_8,
-                        BarcodeFormat.UPC_EAN_EXTENSION
-                      ];
-                      const hints = new Map();
-                      hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-                      const reader = new BrowserMultiFormatReader(hints);
-                      (window as any)._homeHtml5QrcodeScanner = reader;
+                      // Configure Quagga
+                      Quagga.init({
+                        inputStream: {
+                          type: "LiveStream",
+                          target: document.querySelector("#home-qr-reader") as HTMLElement,
+                          constraints: {
+                            facingMode: "environment",
+                            width: { min: 640, ideal: 3840 },
+                            height: { min: 480, ideal: 2160 },
+                          },
+                        },
+                        numOfWorkers: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 4 : 4,
+                        decoder: {
+                          readers: [
+                            "upc_reader",
+                            "upc_e_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_128_reader"
+                          ],
+                          multiple: false
+                        },
+                        locate: true,
+                        locator: {
+                          halfSample: true,
+                          patchSize: "medium"
+                        }
+                      }, (err) => {
+                        if (err) {
+                          alert(`Camera access failed: ${err.message || err}`);
+                          return;
+                        }
+                        Quagga.start();
 
-                      const videoElement = document.getElementById('home-qr-reader') as HTMLVideoElement;
-                      if (!videoElement) return;
-
-                      await reader.decodeFromConstraints(
-                        { video: { facingMode: 'environment' } },
-                        videoElement,
-                        async (result, error) => {
-                          if (result) {
-                            const decodedText = result.getText();
-                            const cleanText = (decodedText.length === 13 && decodedText.startsWith('0')) ? decodedText.substring(1) : decodedText;
-                            setBarcodeInput(cleanText);
-                            // Automatically look up the product and add to cart
-                            const match = products.find(
-                              p => p.sku.toLowerCase() === cleanText.trim().toLowerCase()
-                            );
-                            if (match) {
-                              addToCart(match);
-                              setScannedMessage({ 
-                                type: 'success', 
-                                text: `Scanned: ${match.name} (SKU: ${match.sku}) added to cart.` 
-                              });
-                              setTimeout(() => setScannedMessage(null), 3000);
-                            } else {
-                              setScannedMessage({ 
-                                type: 'error', 
-                                text: `No product found matching SKU: "${cleanText}"` 
-                              });
-                              setTimeout(() => setScannedMessage(null), 4000);
+                        // Apply hardware zoom fix for macro thresholds on mobile devices
+                        setTimeout(() => {
+                          try {
+                            const video = document.querySelector("#home-qr-reader video") as HTMLVideoElement;
+                            if (video && video.srcObject) {
+                              const stream = video.srcObject as MediaStream;
+                              const track = stream.getVideoTracks()[0];
+                              if (track && typeof track.getCapabilities === 'function') {
+                                const capabilities = track.getCapabilities() as any;
+                                if (capabilities && capabilities.zoom) {
+                                  const maxZoom = capabilities.zoom.max || 1;
+                                  const minZoom = capabilities.zoom.min || 1;
+                                  const targetZoom = maxZoom > 1 ? Math.min(maxZoom, 2) : minZoom;
+                                  track.applyConstraints({
+                                    advanced: [{ zoom: targetZoom } as any]
+                                  });
+                                }
+                              }
                             }
+                          } catch (zoomErr) {
+                            console.warn("Failed to apply hardware zoom:", zoomErr);
+                          }
+                        }, 800);
+                      });
 
-                            try {
-                              reader.reset();
-                            } catch (e) {}
-                            (window as any)._homeHtml5QrcodeScanner = null;
-                            if (scanContainer) {
-                              scanContainer.style.display = 'none';
-                              scanContainer.classList.add('hidden');
-                            }
+                      (window as any)._homeHtml5QrcodeScanner = Quagga;
+
+                      Quagga.onDetected(async (result) => {
+                        if (result && result.codeResult && result.codeResult.code) {
+                          const decodedText = result.codeResult.code;
+                          const cleanText = (decodedText.length === 13 && decodedText.startsWith('0')) ? decodedText.substring(1) : decodedText;
+                          
+                          setBarcodeInput(cleanText);
+                          
+                          // Auto trigger submission for external/camera scanners to avoid double clicks
+                          setTimeout(() => {
+                            const event = new Event('submit', { cancelable: true, bubbles: true });
+                            document.querySelector('form')?.dispatchEvent(event);
+                          }, 50);
+
+                          try {
+                            Quagga.stop();
+                            Quagga.offDetected();
+                          } catch (e) {}
+                          (window as any)._homeHtml5QrcodeScanner = null;
+                          const scanContainer = document.getElementById('home-qr-reader-wrapper');
+                          if (scanContainer) {
+                            scanContainer.style.display = 'none';
+                            scanContainer.classList.add('hidden');
                           }
                         }
-                      );
+                      });
                     } catch (err: any) {
                       alert(`Camera access failed: ${err.message || err}`);
                     }
@@ -357,7 +391,9 @@ export default function HomePage() {
                     onClick={async () => {
                       if ((window as any)._homeHtml5QrcodeScanner) {
                         try {
-                          (window as any)._homeHtml5QrcodeScanner.reset();
+                          const Q = (window as any)._homeHtml5QrcodeScanner;
+                          Q.stop();
+                          Q.offDetected();
                         } catch (e) {}
                         (window as any)._homeHtml5QrcodeScanner = null;
                       }
@@ -374,11 +410,9 @@ export default function HomePage() {
                   </button>
                 </div>
                 
-                <video 
+                <div 
                   id="home-qr-reader" 
-                  className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square object-cover"
-                  playsInline
-                  muted
+                  className="w-full overflow-hidden rounded-xl border border-slate-850 bg-black aspect-square relative"
                 />
               </div>
             </div>
@@ -396,7 +430,7 @@ export default function HomePage() {
           </div>
 
           {/* Product Catalog search */}
-          <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg space-y-6">
+          <div className="lg:col-span-8 order-3 lg:order-none bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-white">Product Catalog</h3>
@@ -503,10 +537,9 @@ export default function HomePage() {
               );
             })()}
           </div>
-        </div>
 
         {/* Right Column: Checkout Cart */}
-        <div className="lg:col-span-4 space-y-6 order-1 lg:order-none">
+        <div className="lg:col-span-4 lg:row-span-2 order-2 lg:order-none flex flex-col h-full">
           <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 shadow-lg flex flex-col h-full min-h-[450px]">
             <div className="flex justify-between items-center border-b border-slate-850 pb-4 mb-4">
               <div className="flex items-center gap-2">

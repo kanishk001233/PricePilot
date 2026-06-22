@@ -31,6 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   
+  const { theme, toggleTheme, user: preloadedUser, loadingUser } = useTheme();
   const [user, setUser] = useState<{ email: string; role: string; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -39,30 +40,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const roleSwitcherRef = useRef<HTMLDivElement>(null);
-
-  // Fetch session & notifications
-  const fetchSession = async () => {
-    try {
-      const res = await fetch('/api/auth/me');
-      if (res.status === 401) {
-        router.push('/login');
-        return;
-      }
-      const data = await res.json();
-      if (data.authenticated) {
-        setUser(data.user);
-      }
-    } catch (err) {
-      console.error('Error fetching session:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchNotifications = async () => {
     try {
@@ -77,13 +58,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   useEffect(() => {
-    fetchSession();
+    if (!loadingUser) {
+      if (!preloadedUser) {
+        router.push('/login');
+      } else {
+        setUser(preloadedUser);
+        setLoading(false);
+      }
+    }
+  }, [loadingUser, preloadedUser]);
+
+  useEffect(() => {
+    if (!preloadedUser) return;
     fetchNotifications();
 
     // Poll for notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [preloadedUser]);
 
   // Close dropdowns on outside clicks
   useEffect(() => {
@@ -147,6 +139,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     } catch (err) {
       console.error('Error reading notification:', err);
+    }
+  };
+
+  const handleDeleteNotification = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Avoid triggering mark as read
+    try {
+      const res = await fetch(`/api/notifications?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }
+    } catch (err) {
+      console.error('Error deleting notification:', err);
     }
   };
 
@@ -240,19 +246,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Right side controls */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-1 lg:flex-initial lg:w-[380px] justify-end">
-          {/* Sync Trigger */}
-          {['Admin', 'Pricing Analyst'].includes(user?.role || '') && (
-            <button
-              onClick={handleSyncCompetitors}
-              disabled={syncing}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50"
-              style={{ borderColor: 'var(--pp-border)', background: 'var(--pp-bg-secondary)', color: 'var(--pp-text-secondary)' }}
-            >
-              <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'Syncing...' : 'Sync'}</span>
-            </button>
-          )}
-
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -308,7 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
 
           {/* Role Switcher Widget */}
-          <div className="relative" ref={roleSwitcherRef}>
+          <div className="relative hidden sm:block" ref={roleSwitcherRef}>
             <button
               onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-all cursor-pointer"
@@ -375,14 +368,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             : 'bg-white dark:bg-slate-800 border-orange-500/20 hover:border-orange-500/40 text-slate-800 dark:text-slate-200 shadow-sm'
                         }`}
                       >
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2 relative group">
                           <span className="mt-0.5">
                             {notif.type === 'competitor' && <AlertCircle className="w-3.5 h-3.5 text-orange-500" />}
                             {notif.type === 'stock' && <Package className="w-3.5 h-3.5 text-yellow-500" />}
                             {notif.type === 'margin' && <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />}
                             {notif.type === 'system' && <Sliders className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />}
                           </span>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 pr-5">
                             <p className={`text-xs font-bold leading-normal ${notif.isRead ? 'text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>
                               {notif.title}
                             </p>
@@ -390,6 +383,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                               {notif.message}
                             </p>
                           </div>
+                          <button
+                            onClick={(e) => handleDeleteNotification(notif.id, e)}
+                            className="absolute top-0 right-0 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 cursor-pointer"
+                            title="Delete alert"
+                          >
+                            <X className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                          </button>
                         </div>
                       </div>
                     ))
@@ -457,7 +457,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                       isActive
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                        ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
                         : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/40'
                     }`}
                   >
@@ -467,7 +467,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 );
               })}
             </nav>
-            <div className="p-4" style={{ borderTop: '1px solid var(--pp-border)' }}>
+            <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--pp-border)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold uppercase text-xs" style={{ background: 'var(--pp-bg-tertiary)', border: '1px solid var(--pp-border)', color: 'var(--pp-accent-text)' }}>
                   {user?.name.substring(0, 2)}
@@ -476,6 +476,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <p className="text-xs font-bold truncate" style={{ color: 'var(--pp-text-primary)' }}>{user?.name}</p>
                   <p className="text-[10px] truncate" style={{ color: 'var(--pp-text-muted)' }}>{user?.email}</p>
                 </div>
+              </div>
+
+              {/* Mobile Role Switcher */}
+              <div className="space-y-1 pt-2 border-t border-dashed" style={{ borderColor: 'var(--pp-border)' }}>
+                <span className="text-[9px] font-bold uppercase tracking-wider block" style={{ color: 'var(--pp-text-muted)' }}>Active Role</span>
+                <select
+                  value={user?.role}
+                  onChange={(e) => handleRoleSwitch(e.target.value)}
+                  className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg border outline-none cursor-pointer"
+                  style={{ background: 'var(--pp-bg-tertiary)', color: 'var(--pp-text-secondary)', borderColor: 'var(--pp-border)' }}
+                >
+                  {['Admin', 'Pricing Analyst', 'Manager', 'Viewer'].map((role) => (
+                    <option 
+                      key={role} 
+                      value={role}
+                      className="text-slate-900 dark:text-white bg-white dark:bg-slate-900"
+                    >
+                      {role}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

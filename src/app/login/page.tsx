@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Sparkles, User, HelpCircle, ChevronRight } from 'lucide-react';
 import { supabaseClient } from '@/lib/supabaseClient';
+import { useTheme } from '@/lib/ThemeProvider';
  
 export default function LoginPage() {
   const router = useRouter();
+  const { preloadUserSession } = useTheme();
   
   // Tabs toggle
   const [isSignUp, setIsSignUp] = useState(false);
@@ -38,6 +40,7 @@ export default function LoginPage() {
  
       const data = await res.json();
       if (res.ok && data.success) {
+        await preloadUserSession();
         router.push('/home');
       } else {
         setError(data.error || 'Invalid credentials');
@@ -69,6 +72,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         alert('Account created successfully! Directing you to the home page...');
+        await preloadUserSession();
         router.push('/home');
       } else {
         setError(data.error || 'Registration failed');

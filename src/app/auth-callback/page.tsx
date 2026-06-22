@@ -3,9 +3,11 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabaseClient';
+import { useTheme } from '@/lib/ThemeProvider';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const { preloadUserSession } = useTheme();
   const hasProcessed = useRef(false);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function AuthCallbackPage() {
         if (res.ok) {
           const syncData = await res.json();
           if (syncData.success) {
+            await preloadUserSession();
             router.push('/home');
           } else {
             router.push(`/login?error=${encodeURIComponent(syncData.error || 'Session synchronization error')}`);

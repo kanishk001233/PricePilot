@@ -556,6 +556,13 @@ export const db = {
     return true;
   },
 
+  async deleteNotification(id: string): Promise<boolean> {
+    if (!supabase) return true;
+    const { error } = await supabase.from('notifications').delete().eq('id', id);
+    if (error) throw new Error(`PostgreSQL Database Error: ${error.message}`);
+    return true;
+  },
+
   async addNotification(title: string, message: string, type: 'competitor' | 'stock' | 'margin' | 'system'): Promise<seed.Notification> {
     ensureDB();
     const { data, error } = await supabase!.from('notifications').insert({
