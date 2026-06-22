@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const fetchWhatsAppStatus = async () => {
     try {
-      const res = await fetch('/api/whatsapp/status');
+      const res = await fetch(`/api/whatsapp/status?t=\${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setWhatsappInfo(data);
@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleConnectWhatsApp = async () => {
     setLoadingWhatsapp(true);
     try {
-      const res = await fetch('/api/whatsapp/status', { method: 'POST' });
+      const res = await fetch(`/api/whatsapp/status?t=\${Date.now()}`, { method: 'POST', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setWhatsappInfo(data);
@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleDisconnectWhatsApp = async () => {
     setLoadingWhatsapp(true);
     try {
-      const res = await fetch('/api/whatsapp/status', { method: 'DELETE' });
+      const res = await fetch(`/api/whatsapp/status?t=\${Date.now()}`, { method: 'DELETE', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setWhatsappInfo({ status: data.status, qr: null });

@@ -1,6 +1,8 @@
 import { Client, LocalAuth } from 'whatsapp-web.js';
 // @ts-ignore
 import qrcode from 'qrcode-terminal';
+import path from 'path';
+import os from 'os';
 
 let client: Client | null = null;
 let whatsappStatus: 'DISCONNECTED' | 'INITIALIZING' | 'QR_RECEIVED' | 'CONNECTED' = 'DISCONNECTED';
@@ -60,11 +62,32 @@ export function getWhatsAppClient(): Client {
   whatsappStatus = 'INITIALIZING';
   lastQr = null;
 
+  const dataPath = process.env.WWEBJS_AUTH_PATH || path.join(process.cwd(), '.wwebjs_auth');
+  const executablePath = process.env.CHROME_PATH || undefined;
+
+  console.log(`[WhatsApp] Using data path: ${dataPath}`);
+  if (executablePath) {
+    console.log(`[WhatsApp] Using custom Chrome path: ${executablePath}`);
+  }
+
   client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth({
+      dataPath: dataPath
+    }),
     puppeteer: {
+      headless: true,
       handleSIGINT: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: executablePath,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+        '--single-process'
+      ],
     }
   });
 
