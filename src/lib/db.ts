@@ -605,7 +605,10 @@ export const db = {
 };
 
 // Background Scheduler: runs every 1 hour (3,600,000 milliseconds)
-if (typeof global !== 'undefined' && !(global as any)._pricePilotSchedulerStarted) {
+const isNextBuild = process.env.NEXT_PHASE === 'phase-production-build' || process.env.IS_NEXT_BUILD === 'true';
+const isNextWorker = process.env.NEXT_PRIVATE_WORKER === 'true';
+
+if (typeof global !== 'undefined' && !(global as any)._pricePilotSchedulerStarted && !isNextBuild && !isNextWorker) {
   (global as any)._pricePilotSchedulerStarted = true;
   console.log('[Scheduler] Initializing background competitor price scraping queue...');
   
