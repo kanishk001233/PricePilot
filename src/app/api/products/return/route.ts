@@ -82,36 +82,33 @@ export async function POST(req: NextRequest) {
         totalRefunded: transaction.revenue
       };
 
-      // Execute asynchronously in background
-      (async () => {
-        try {
-          if (isCustomerPhoneValid && returnData.customer.phone) {
-            const whatsappText = `↩️ *PricePilot Return Confirmation* ↩️\n` +
-              `Transaction ID: ${returnData.transactionId}\n` +
-              `Date: ${returnData.date}\n\n` +
-              `*Customer details:*\n` +
-              `Name: ${returnData.customer.name}\n` +
-              `Phone: ${returnData.customer.phone}\n\n` +
-              `*Returned Item:*\n` +
-              `- ${returnData.productName} (Qty: ${returnData.quantity}) - Refunded: ₹${returnData.totalRefunded.toFixed(2)}\n\n` +
-              `The item return has been processed. Thank you!`;
+      try {
+        if (isCustomerPhoneValid && returnData.customer.phone) {
+          const whatsappText = `↩️ *PricePilot Return Confirmation* ↩️\n` +
+            `Transaction ID: ${returnData.transactionId}\n` +
+            `Date: ${returnData.date}\n\n` +
+            `*Customer details:*\n` +
+            `Name: ${returnData.customer.name}\n` +
+            `Phone: ${returnData.customer.phone}\n\n` +
+            `*Returned Item:*\n` +
+            `- ${returnData.productName} (Qty: ${returnData.quantity}) - Refunded: ₹${returnData.totalRefunded.toFixed(2)}\n\n` +
+            `The item return has been processed. Thank you!`;
 
-            await sendWhatsAppMessage(returnData.customer.phone, whatsappText);
-            console.log('[Return Route] WhatsApp confirmation sent');
-          }
-        } catch (whatsappErr) {
-          console.error('[Return Route] Failed to send WhatsApp return notification:', whatsappErr);
+          await sendWhatsAppMessage(returnData.customer.phone, whatsappText);
+          console.log('[Return Route] WhatsApp confirmation sent');
         }
+      } catch (whatsappErr) {
+        console.error('[Return Route] Failed to send WhatsApp return notification:', whatsappErr);
+      }
 
-        try {
-          if (isCustomerEmailValid && returnData.customer.email) {
-            await sendEmailReturn(returnData.customer.email, returnData);
-            console.log('[Return Route] Email return confirmation sent');
-          }
-        } catch (emailErr) {
-          console.error('[Return Route] Failed to send email return notification:', emailErr);
+      try {
+        if (isCustomerEmailValid && returnData.customer.email) {
+          await sendEmailReturn(returnData.customer.email, returnData);
+          console.log('[Return Route] Email return confirmation sent');
         }
-      })();
+      } catch (emailErr) {
+        console.error('[Return Route] Failed to send email return notification:', emailErr);
+      }
     }
 
     return NextResponse.json({
