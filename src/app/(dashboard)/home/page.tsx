@@ -18,10 +18,13 @@ import {
   X
 } from 'lucide-react';
 import Link from 'next/link';
+import { useTheme } from '@/lib/ThemeProvider';
 
 export default function HomePage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { productsData, loadingProducts, preloadProducts } = useTheme();
+
+  const products = productsData;
+  const loading = loadingProducts;
   
   // Search and Scanner States
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,15 +49,9 @@ export default function HomePage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/products');
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
-      }
+      await preloadProducts();
     } catch (err) {
       console.error('Error fetching products:', err);
-    } finally {
-      setLoading(false);
     }
   };
 

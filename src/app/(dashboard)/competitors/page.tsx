@@ -46,8 +46,7 @@ export default function CompetitorsPage() {
   } = useTheme();
 
   const competitors = competitorsData?.competitors || [];
-  const competitorProducts: CompetitorProduct[] =
-    competitorsData?.competitorProducts || [];
+  const competitorProducts = competitorsData?.competitorProducts || [];
   const products = productsData;
   const loading = loadingCompetitors || loadingProducts;
 
@@ -68,7 +67,7 @@ export default function CompetitorsPage() {
   const [selectedHistoryFeedId, setSelectedHistoryFeedId] = useState<string | null>(null);
   const selectedHistoryFeed = React.useMemo(() => {
     if (!selectedHistoryFeedId) return null;
-    return competitorProducts.find(cp => cp.id === selectedHistoryFeedId) || null;
+    return competitorProducts.find((cp: any) => cp.id === selectedHistoryFeedId) || null;
   }, [selectedHistoryFeedId, competitorProducts]);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedCompetitorId, setSelectedCompetitorId] = useState('');
@@ -134,7 +133,7 @@ export default function CompetitorsPage() {
 
   const groupedProducts = React.useMemo(() => {
     return products.map(prod => {
-      const feeds = competitorProducts.filter(cp => cp.productId === prod.id);
+      const feeds = competitorProducts.filter((cp: any) => cp.productId === prod.id);
       return {
         productId: prod.id,
         productSku: prod.sku,
@@ -718,7 +717,7 @@ export default function CompetitorsPage() {
                   onChange={(e) => setSelectedCompetitorId(e.target.value)}
                   className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-400 focus:outline-none"
                 >
-                  {competitors.map(c => (
+                  {competitors.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>

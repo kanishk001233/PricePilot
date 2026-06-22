@@ -17,6 +17,7 @@ interface ThemeContextType {
   preloadProducts: () => Promise<void>;
   categoriesData: any[];
   loadingCategories: boolean;
+  categoriesError: string;
   preloadCategories: () => Promise<void>;
   competitorsData: any;
   loadingCompetitors: boolean;
