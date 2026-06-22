@@ -36,6 +36,13 @@ export async function GET(req: NextRequest) {
     console.error('[Test Email Error]:', error);
     return NextResponse.json({
       success: false,
+      resolvedCredentials: {
+        user,
+        passLength: pass ? pass.length : 0,
+        passStart: pass ? pass.substring(0, 3) : '',
+        usingEnvUser: !!process.env.SMTP_USER,
+        usingEnvPass: !!process.env.SMTP_PASS
+      },
       error: error.message || 'Unknown error',
       code: error.code,
       command: error.command,
