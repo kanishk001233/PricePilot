@@ -252,13 +252,15 @@ export async function POST(req: NextRequest) {
         }
       };
 
-      runBulkBackgroundMatching(added).catch(err => {
+      // In serverless environments, we must await background scraping/matching
+      // before returning the response, otherwise the container freezes and halts execution.
+      await runBulkBackgroundMatching(added).catch(err => {
         console.error('[Matching] [Background-Bulk] Fatal background matching task error:', err);
       });
 
       await logActionSafely(
         'BULK_IMPORT_PRODUCTS',
-        `Imported ${added.length} products via CSV upload. Background competitor matching started.`
+        `Imported ${added.length} products via CSV upload. Competitor matching completed.`
       );
 
       return NextResponse.json({ success: true, count: added.length, products: added });
@@ -338,13 +340,15 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    runBackgroundMatching().catch(err => {
+    // In serverless environments, we must await background scraping/matching
+    // before returning the response, otherwise the container freezes and halts execution.
+    await runBackgroundMatching().catch(err => {
       console.error('[Matching] [Background] Fatal background matching task error:', err);
     });
 
     await logActionSafely(
       'CREATE_PRODUCT',
-      `Created product SKU: ${sku} - ${name}. Cost: ₹${costPrice}, Price: ₹${currentPrice}. Background competitor matching started.`
+      `Created product SKU: ${sku} - ${name}. Cost: ₹${costPrice}, Price: ₹${currentPrice}. Competitor matching completed.`
     );
 
     return NextResponse.json(newProduct, { status: 201 });
