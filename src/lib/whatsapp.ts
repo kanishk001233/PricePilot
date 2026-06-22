@@ -168,6 +168,24 @@ export function getWhatsAppClient(forceReinit = false): Client {
 }
 
 export async function sendWhatsAppMessage(to: string, message: string) {
+  const serviceUrl = process.env.WHATSAPP_SERVICE_URL;
+
+  if (serviceUrl) {
+    console.log(`[WhatsApp] Forwarding send message to microservice at ${serviceUrl}...`);
+    const res = await fetch(`${serviceUrl}/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ to, message })
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to send message via microservice');
+    }
+    return;
+  }
+
   const client = getWhatsAppClient();
   
   // Wait up to 15 seconds if client is not ready

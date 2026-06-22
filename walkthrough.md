@@ -1,6 +1,6 @@
 # WhatsApp Connection System & UI Integration Walkthrough
 
-This walkthrough outlines the implementation details for automatically sending confirmation notifications when a product is returned, along with updating the POS interface, adding a profile-integrated WhatsApp connection manager, and optimizing it for deployments, recovery, real-time updates, background scheduling, and system fallback safety.
+This walkthrough outlines the implementation details for automatically sending confirmation notifications when a product is returned, along with updating the POS interface, adding a profile-integrated WhatsApp connection manager, and optimizing it for deployments, recovery, real-time updates, microservice architectures, and system fallback safety.
 
 ## Changes Made
 
@@ -32,13 +32,15 @@ This walkthrough outlines the implementation details for automatically sending c
   - Clicking the option displays a modal in the browser that lets the user trigger a connection, scan the QR code directly inside their profile settings page, check connection status, or disconnect.
   - Auto-polls the backend for active state updates to provide real-time connection feedback.
 
-### 5. Role-Based Visibility Restrictions
+### 5. Decoupled EC2 Microservice Architecture
+- **EC2 WhatsApp Microservice (`/whatsapp-service`)**: Created an independent node service in `/whatsapp-service` running an Express server on port `3001` containing all Puppeteer/`whatsapp-web.js` browser launching, session handling, status checks, and message sending.
+- **Amplify Next.js Integration**:
+  - Updated API route endpoints `/api/whatsapp/status` and `/api/invoice/send` (and library methods inside `src/lib/whatsapp.ts`) to check for a `WHATSAPP_SERVICE_URL` environment configuration.
+  - When configured, Next.js dynamically forwards status checks, connection triggers, and message dispatches via HTTP requests to the EC2 service instead of spawning local browser frames, completely bypassing serverless execution limits.
+
+### 6. Role-Based Visibility Restrictions
 - **UI Limitation**: Configured a conditional check (`user?.role === 'Admin' && (...)`) around the **Connect WhatsApp** profile dropdown item. The button is now completely hidden from Pricing Analysts, Managers, and Viewers.
 - **Database Schema Migration**: Created [supabase_migration.sql](file:///c:/Users/Lenovo/Desktop/PricePilot/supabase_migration.sql) containing migration commands to add/verify the `role` column structure in your Supabase `users` database table.
-
-### 6. Background Scheduler Build-Time Guard
-- **The Issue**: Next.js page collection spawns several compiler worker threads (e.g. 7 workers). During next build, all workers imported the database file which caused `[Scheduler] Initializing background competitor price scraping queue...` to print multiple times and spawn unnecessary background intervals.
-- **The Fix**: Added condition checks `process.env.NEXT_PHASE !== 'phase-production-build'` and `process.env.NEXT_PRIVATE_WORKER !== 'true'` before running the scheduler. The scraping interval is now skipped entirely during compilation and only initializes once on a live running server.
 
 ### 7. Connection Recovery & Error Cleanup Fixes
 - **Initialization Crash Recovery**: Modified the `client.initialize().catch()` block to cleanly destroy the failed client instance, clear `globalRef.whatsappClient`, and set `client = null` if Puppeteer fails to initialize on slow/restricted servers. This ensures that future connection attempts start with a fresh instance rather than reusing a broken client with a detached frame.

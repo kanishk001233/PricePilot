@@ -10,11 +10,20 @@ const noCacheHeaders = {
   'Expires': '0',
 };
 
+const serviceUrl = process.env.WHATSAPP_SERVICE_URL;
+
 export async function GET(req: NextRequest) {
   try {
     const session = getSession(req);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (serviceUrl) {
+      console.log(`[WhatsApp API] Fetching status from microservice at ${serviceUrl}/status...`);
+      const res = await fetch(`${serviceUrl}/status?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      return NextResponse.json(data, { headers: noCacheHeaders });
     }
 
     return NextResponse.json(getWhatsAppStatus(), { headers: noCacheHeaders });
@@ -29,6 +38,13 @@ export async function POST(req: NextRequest) {
     const session = getSession(req);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (serviceUrl) {
+      console.log(`[WhatsApp API] Forwarding connection request to microservice at ${serviceUrl}/connect...`);
+      const res = await fetch(`${serviceUrl}/connect`, { method: 'POST', cache: 'no-store' });
+      const data = await res.json();
+      return NextResponse.json(data, { headers: noCacheHeaders });
     }
 
     // Trigger initialization with forceReinit = true
@@ -56,6 +72,13 @@ export async function DELETE(req: NextRequest) {
     const session = getSession(req);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (serviceUrl) {
+      console.log(`[WhatsApp API] Forwarding disconnect request to microservice at ${serviceUrl}/status...`);
+      const res = await fetch(`${serviceUrl}/status`, { method: 'DELETE', cache: 'no-store' });
+      const data = await res.json();
+      return NextResponse.json(data, { headers: noCacheHeaders });
     }
 
     await disconnectWhatsApp();

@@ -1,0 +1,19 @@
+# Local dependencies
+node_modules/
+
+# WhatsApp session cache (DO NOT commit your login credentials to GitHub!)
+.wwebjs_auth/
+
+# Environment configurations
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
