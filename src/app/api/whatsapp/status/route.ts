@@ -31,13 +31,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Trigger initialization
-    getWhatsAppClient();
+    // Trigger initialization with forceReinit = true
+    getWhatsAppClient(true);
 
-    // Give it a tiny moment to switch to INITIALIZING/loading state
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Instead of returning immediately (which freezes the AWS Lambda/Amplify CPU container),
+    // wait until the client transitions to QR_RECEIVED or CONNECTED state.
+    let statusObj = getWhatsAppStatus();
+    let attempts = 0;
+    while ((statusObj.status === 'INITIALIZING' || statusObj.status === 'DISCONNECTED') && attempts < 15) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      statusObj = getWhatsAppStatus();
+      attempts++;
+    }
 
-    return NextResponse.json(getWhatsAppStatus(), { headers: noCacheHeaders });
+    return NextResponse.json(statusObj, { headers: noCacheHeaders });
   } catch (error: any) {
     console.error('WhatsApp POST connect error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

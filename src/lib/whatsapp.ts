@@ -3,6 +3,7 @@ import { Client, LocalAuth } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 import path from 'path';
 import os from 'os';
+import fs from 'fs';
 
 let client: Client | null = null;
 let whatsappStatus: 'DISCONNECTED' | 'INITIALIZING' | 'QR_RECEIVED' | 'CONNECTED' = 'DISCONNECTED';
@@ -12,13 +13,6 @@ export function getWhatsAppStatus() {
   const globalRef = global as any;
   if (!client && globalRef.whatsappClient) {
     client = globalRef.whatsappClient;
-  }
-  if (client) {
-    if ((client as any).pupPage) {
-      if (whatsappStatus !== 'CONNECTED' && whatsappStatus !== 'QR_RECEIVED') {
-        whatsappStatus = 'CONNECTED';
-      }
-    }
   }
   return {
     status: whatsappStatus,
@@ -46,15 +40,28 @@ export async function disconnectWhatsApp() {
   lastQr = null;
 }
 
-export function getWhatsAppClient(): Client {
+export function getWhatsAppClient(forceReinit = false): Client {
+  const globalRef = global as any;
+
+  if (forceReinit) {
+    console.log('[WhatsApp] Force re-initializing WhatsApp client...');
+    if (globalRef.whatsappClient) {
+      try {
+        globalRef.whatsappClient.destroy();
+      } catch (e) {
+        console.error('Error destroying old client:', e);
+      }
+      delete globalRef.whatsappClient;
+    }
+    client = null;
+    whatsappStatus = 'DISCONNECTED';
+    lastQr = null;
+  }
+
   if (client) return client;
 
-  const globalRef = global as any;
   if (globalRef.whatsappClient) {
     client = globalRef.whatsappClient;
-    if ((client as any).pupPage) {
-      whatsappStatus = 'CONNECTED';
-    }
     return client!;
   }
 
@@ -63,32 +70,49 @@ export function getWhatsAppClient(): Client {
   lastQr = null;
 
   const dataPath = process.env.WWEBJS_AUTH_PATH || path.join(process.cwd(), '.wwebjs_auth');
-  const executablePath = process.env.CHROME_PATH || undefined;
+  let executablePath = process.env.CHROME_PATH || undefined;
+  const browserWSEndpoint = process.env.BROWSER_WS_ENDPOINT || undefined;
 
   console.log(`[WhatsApp] Using data path: ${dataPath}`);
-  if (executablePath) {
-    console.log(`[WhatsApp] Using custom Chrome path: ${executablePath}`);
+  if (browserWSEndpoint) {
+    console.log('[WhatsApp] Connecting to remote Chrome browser over WebSocket...');
+  } else if (executablePath) {
+    if (fs.existsSync(executablePath)) {
+      console.log(`[WhatsApp] Using custom Chrome path: ${executablePath}`);
+    } else {
+      console.warn(`[WhatsApp] Configured CHROME_PATH does not exist at "${executablePath}"! Falling back to default.`);
+      executablePath = undefined;
+    }
   }
 
   client = new Client({
     authStrategy: new LocalAuth({
       dataPath: dataPath
     }),
-    puppeteer: {
-      headless: true,
-      handleSIGINT: false,
-      executablePath: executablePath,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu',
-        '--single-process'
-      ],
-    }
+    puppeteer: browserWSEndpoint 
+      ? {
+          browserWSEndpoint: browserWSEndpoint,
+          headless: true,
+          handleSIGINT: false,
+          timeout: 60000,
+        }
+      : {
+          headless: true,
+          handleSIGINT: false,
+          executablePath: executablePath,
+          timeout: 60000,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+            '--single-process',
+            '--disable-extensions'
+          ],
+        }
   });
 
   client.on('qr', (qr) => {
@@ -122,6 +146,17 @@ export function getWhatsAppClient(): Client {
   client.initialize().catch(err => {
     console.error('[WhatsApp] Failed to initialize:', err);
     whatsappStatus = 'DISCONNECTED';
+    try {
+      if (client) {
+        client.destroy();
+      }
+    } catch (e) {
+      console.error('Error destroying client on failed init:', e);
+    }
+    client = null;
+    if (globalRef.whatsappClient) {
+      delete globalRef.whatsappClient;
+    }
   });
 
   globalRef.whatsappClient = client;
