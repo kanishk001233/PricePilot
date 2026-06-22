@@ -535,7 +535,7 @@ export default function ProductsPage() {
                       "upc_reader",
                       "upc_e_reader",
                       "ean_reader",
-                      "ean_8_reader",
+                      "ean_reader",
                       "code_128_reader"
                     ],
                     multiple: false
@@ -996,7 +996,7 @@ export default function ProductsPage() {
                                   "upc_reader",
                                   "upc_e_reader",
                                   "ean_reader",
-                                  "ean_8_reader",
+                                  "ean_reader",
                                   "code_128_reader"
                                 ],
                                 multiple: false
