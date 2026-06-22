@@ -1,6 +1,6 @@
 # WhatsApp Connection System & UI Integration Walkthrough
 
-This walkthrough outlines the implementation details for automatically sending confirmation notifications when a product is returned, along with updating the POS interface, adding a profile-integrated WhatsApp connection manager, and optimizing it for deployments, recovery, real-time updates, and system fallback safety.
+This walkthrough outlines the implementation details for automatically sending confirmation notifications when a product is returned, along with updating the POS interface, adding a profile-integrated WhatsApp connection manager, and optimizing it for deployments, recovery, real-time updates, role restrictions, and system fallback safety.
 
 ## Changes Made
 
@@ -32,19 +32,29 @@ This walkthrough outlines the implementation details for automatically sending c
   - Clicking the option displays a modal in the browser that lets the user trigger a connection, scan the QR code directly inside their profile settings page, check connection status, or disconnect.
   - Auto-polls the backend for active state updates to provide real-time connection feedback.
 
-### 5. Connection Recovery & Error Cleanup Fixes
+### 5. Role-Based Visibility Restrictions
+- **UI Limitation**: Configured a conditional check (`user?.role === 'Admin' && (...)`) around the **Connect WhatsApp** profile dropdown item. The button is now completely hidden from Pricing Analysts, Managers, and Viewers.
+- **Database Schema Migration**: Created [supabase_migration.sql](file:///c:/Users/Lenovo/Desktop/PricePilot/supabase_migration.sql) containing migration commands to add/verify the `role` column structure in your Supabase `users` database table.
+
+### 6. Connection Recovery & Error Cleanup Fixes
 - **Initialization Crash Recovery**: Modified the `client.initialize().catch()` block to cleanly destroy the failed client instance, clear `globalRef.whatsappClient`, and set `client = null` if Puppeteer fails to initialize on slow/restricted servers. This ensures that future connection attempts start with a fresh instance rather than reusing a broken client with a detached frame.
 - **Puppeteer Timeout Extension**: Set Puppeteer launch timeout to 60 seconds (`timeout: 60000`) to prevent slow cloud VPS units from failing initialization mid-flight.
 - **Chrome Binary Existence Check (Fallback)**:
   - Added verification to ensure that if a custom `CHROME_PATH` is specified, it exists on the host server.
   - If the path is not found (e.g. if the package is missing or installed at a different path), the application automatically prints a console warning and falls back to default Puppeteer launch settings instead of crashing the process.
 - **Fake Connection State Bug Fix**: Removed internal `(client as any).pupPage` checking blocks which incorrectly updated the status to `'CONNECTED'` as soon as the Puppeteer process opened a blank tab. Connection state is now strictly bound to authentic client lifecycle events (`ready` for CONNECTED, `qr` for QR_RECEIVED).
-- **Cloud/Production Environment Optimization**:
-  - **Serverless Response Awaiting (AWS Amplify Fix)**: Added polling loop in the `POST` request inside `/api/whatsapp/status` route. By waiting for initialization to transition to `QR_RECEIVED` or `CONNECTED` before returning the HTTP response, the AWS Lambda execution thread remains active and avoids freezing the CPU before the browser can retrieve the login QR code.
-  - **Remote Browser WebSocket Support (`BROWSER_WS_ENDPOINT`)**: Added support for remote browsers over WebSockets (e.g. Browserless.io) enabling running on serverless environments (AWS Amplify, Vercel).
-  - Configured custom auth storage folders using `dataPath` (overridable via `WWEBJS_AUTH_PATH` environment variable) to avoid crashes in read-only/serverless environments.
-  - Configured custom binary executable loading (`CHROME_PATH` environment variable) to locate system Chromium binaries on production Linux instances.
-  - Included production-ready Puppeteer arguments (`--no-sandbox`, `--single-process`, `--disable-dev-shm-usage`, etc.) to prevent sandbox crashes on cloud servers.
+
+### 7. Anti-Ban & Bot Detection Bypass measures
+- **User-Agent Spoofing**: Configured a modern, realistic browser User-Agent signature string to bypass automatic headless-browser bot detection filters.
+- **Automation Control Flag Hiding**: Appended `--disable-blink-features=AutomationControlled` to the Puppeteer arguments to completely mask the `navigator.webdriver = true` flag that scripts check to spot automated browsers.
+- **Human Message Delay Simulation**: Embedded a randomized human-like delay between 1.5 and 3.5 seconds (`Math.floor(Math.random() * 2000) + 1500`) directly inside `sendWhatsAppMessage` before any text dispatch. This simulates human action behavior and avoids account flagging due to rapid automated message patterns.
+
+### 8. Cloud/Production Environment Optimization
+- **Serverless Response Awaiting (AWS Amplify Fix)**: Added polling loop in the `POST` request inside `/api/whatsapp/status` route. By waiting for initialization to transition to `QR_RECEIVED` or `CONNECTED` before returning the HTTP response, the AWS Lambda execution thread remains active and avoids freezing the CPU before the browser can retrieve the login QR code.
+- **Remote Browser WebSocket Support (`BROWSER_WS_ENDPOINT`)**: Added support for remote browsers over WebSockets (e.g. Browserless.io) enabling running on serverless environments (AWS Amplify, Vercel).
+- Configured custom auth storage folders using `dataPath` (overridable via `WWEBJS_AUTH_PATH` environment variable) to avoid crashes in read-only/serverless environments.
+- Configured custom binary executable loading (`CHROME_PATH` environment variable) to locate system Chromium binaries on production Linux instances.
+- Included production-ready Puppeteer arguments (`--no-sandbox`, `--single-process`, `--disable-dev-shm-usage`, etc.) to prevent sandbox crashes on cloud servers.
 
 ## Verification Results
 - Ran `npm run build` to verify the build process successfully compiled all files with TypeScript without warnings or errors.

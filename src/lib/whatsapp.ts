@@ -69,7 +69,7 @@ export function getWhatsAppClient(forceReinit = false): Client {
   whatsappStatus = 'INITIALIZING';
   lastQr = null;
 
-  const dataPath = process.env.WWEBJS_AUTH_PATH || path.join(process.cwd(), '.wwebjs_auth');
+  const dataPath = process.env.WWEBJS_AUTH_PATH || path.join(/*turbopackIgnore: true*/ process.cwd(), '.wwebjs_auth');
   let executablePath = process.env.CHROME_PATH || undefined;
   const browserWSEndpoint = process.env.BROWSER_WS_ENDPOINT || undefined;
 
@@ -85,10 +85,13 @@ export function getWhatsAppClient(forceReinit = false): Client {
     }
   }
 
+  const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+
   client = new Client({
     authStrategy: new LocalAuth({
       dataPath: dataPath
     }),
+    userAgent: userAgent,
     puppeteer: browserWSEndpoint 
       ? {
           browserWSEndpoint: browserWSEndpoint,
@@ -110,7 +113,8 @@ export function getWhatsAppClient(forceReinit = false): Client {
             '--no-zygote',
             '--disable-gpu',
             '--single-process',
-            '--disable-extensions'
+            '--disable-extensions',
+            '--disable-blink-features=AutomationControlled'
           ],
         }
   });
@@ -174,6 +178,11 @@ export async function sendWhatsAppMessage(to: string, message: string) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     attempts++;
   }
+
+  // Anti-ban: Add a random human-like delay between 1.5s and 3.5s
+  const humanDelay = Math.floor(Math.random() * 2000) + 1500;
+  console.log(`[WhatsApp] Adding anti-ban human delay of ${humanDelay}ms before sending message...`);
+  await new Promise((resolve) => setTimeout(resolve, humanDelay));
 
   // Format the number to WhatsApp format
   let formattedNumber = to.replace(/\D/g, ''); // keep only digits
