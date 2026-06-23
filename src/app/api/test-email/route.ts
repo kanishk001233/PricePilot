@@ -1,52 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT || '587');
-  const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
-  const pass = process.env.SMTP_PASS || 'psoe hzcy huzx oiti';
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const user = process.env.SMTP_USER || process.env.EMAIL_TO || 'pricepilot.store@gmail.com';
+  if (!resendApiKey) {
+    return NextResponse.json({ success: false, error: 'Missing RESEND_API_KEY' }, { status: 500 });
+  }
+
+  const from = process.env.EMAIL_FROM || `"PricePilot Store Test" <${user}>`;
+  const resend = new Resend(resendApiKey);
 
   try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-      tls: {
-        rejectUnauthorized: false
-      }
+    console.log('[Test Email] Sending test email via Resend...');
+    const info = await resend.emails.send({
+      from,
+      to: [user],
+      subject: 'PricePilot Deployed Resend Test',
+      text: 'If you receive this, Resend is working perfectly from the deployed version!',
     });
 
-    console.log('[Test Email] Verifying connection...');
-    await transporter.verify();
-
-    console.log('[Test Email] Sending test email...');
-    const info = await transporter.sendMail({
-      from: `"PricePilot Store Test" <${user}>`,
-      to: user,
-      subject: 'PricePilot Deployed SMTP Test',
-      text: 'If you receive this, SMTP is working perfectly from the deployed version!'
-    });
-
-    return NextResponse.json({ success: true, message: 'SMTP verified and test email sent!', info });
+    return NextResponse.json({ success: true, message: 'Resend test email sent!', info });
   } catch (error: any) {
     console.error('[Test Email Error]:', error);
-    return NextResponse.json({
-      success: false,
-      resolvedCredentials: {
-        user,
-        passLength: pass ? pass.length : 0,
-        passStart: pass ? pass.substring(0, 3) : '',
-        usingEnvUser: !!process.env.SMTP_USER,
-        usingEnvPass: !!process.env.SMTP_PASS
+    return NextResponse.json(
+      {
+        success: false,
+        resolvedCredentials: {
+          usingEnvUser: !!process.env.SMTP_USER,
+          usingEnvResendKey: !!process.env.RESEND_API_KEY,
+        },
+        error: error?.message || 'Unknown error',
+        code: error?.code,
+        stack: error?.stack,
       },
-      error: error.message || 'Unknown error',
-      code: error.code,
-      command: error.command,
-      stack: error.stack
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 }

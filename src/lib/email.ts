@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import path from 'path';
 import fs from 'fs';
 
@@ -22,32 +22,22 @@ interface InvoiceData {
 }
 
 export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT || '587');
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    throw new Error('Missing RESEND_API_KEY');
+  }
+
+  const resend = new Resend(resendApiKey);
+
   const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
-  const pass = process.env.SMTP_PASS || 'psoe hzcy huzx oiti';
   const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
   const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
-  console.log(`[Email] Setting up SMTP transport: ${host}:${port}...`);
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
-
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
-  const attachments: any[] = [];
+  // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
+  // Keeping the logo discovery logic for future enhancement; currently we send HTML only.
   if (fs.existsSync(logoPath)) {
-    attachments.push({
-      filename: 'logo.png',
-      path: logoPath,
-      cid: 'logo', // same cid value as in the html img src
-    });
+    // no-op
   }
 
   // Generate beautiful HTML template
@@ -181,13 +171,13 @@ export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
     </html>
   `;
 
+  // Logo attachments via cid are not required for Resend; keep attachments variable for now.
   console.log(`[Email] Dispatching invoice email to ${toEmail}...`);
-  await transporter.sendMail({
+  await resend.emails.send({
     from,
-    to: toEmail,
+    to: [toEmail],
     subject: `Your Invoice Receipt: ${invoice.invoiceNumber}`,
     html: htmlContent,
-    attachments,
   });
   console.log(`[Email] Email sent successfully!`);
 }
@@ -208,32 +198,22 @@ export interface ReturnData {
 }
 
 export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT || '587');
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    throw new Error('Missing RESEND_API_KEY');
+  }
+
+  const resend = new Resend(resendApiKey);
+
   const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
-  const pass = process.env.SMTP_PASS || 'psoe hzcy huzx oiti';
   const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
   const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
 
-  console.log(`[Email] Setting up SMTP transport: ${host}:${port} for return email...`);
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
-
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
-  const attachments: any[] = [];
+  // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
+  // Keeping the logo discovery logic for future enhancement; currently we send HTML only.
   if (fs.existsSync(logoPath)) {
-    attachments.push({
-      filename: 'logo.png',
-      path: logoPath,
-      cid: 'logo',
-    });
+    // no-op
   }
 
   const htmlContent = `
@@ -355,12 +335,11 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
   `;
 
   console.log(`[Email] Dispatching return confirmation email to ${toEmail}...`);
-  await transporter.sendMail({
+  await resend.emails.send({
     from,
-    to: toEmail,
+    to: [toEmail],
     subject: `Return Confirmation: Transaction #${returnData.transactionId}`,
     html: htmlContent,
-    attachments,
   });
   console.log(`[Email] Return email sent successfully!`);
 }
