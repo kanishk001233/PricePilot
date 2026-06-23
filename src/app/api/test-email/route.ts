@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const resendApiKey = process.env.RESEND_API_KEY || 're_FeM3urNq_67mpvjHqyJSpc5rg8gpzVcpi';
-  const toEmail = process.env.EMAIL_TO || 'pricepilot.store@gmail.com';
+  const toEmail = process.env.EMAIL_TO || 'onboarding@resend.dev';
   if (!resendApiKey) {
     return NextResponse.json({ success: false, error: 'Missing RESEND_API_KEY' }, { status: 500 });
   }

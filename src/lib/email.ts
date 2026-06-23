@@ -30,7 +30,7 @@ export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
   const resend = new Resend(resendApiKey);
 
   // Resend uses a full email in the `from` header. Avoid legacy SMTP_USER.
-  const from = process.env.EMAIL_FROM || `"PricePilot Store" <pricepilot.store@gmail.com>`;
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <onboarding@resend.dev>`;
 
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
   // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
@@ -205,7 +205,7 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
   const resend = new Resend(resendApiKey);
 
   // Resend uses a full email in the `from` header. Avoid legacy SMTP_USER.
-  const from = process.env.EMAIL_FROM || `"PricePilot Store" <pricepilot.store@gmail.com>`;
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <onboarding@resend.dev>`;
 
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
   // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
