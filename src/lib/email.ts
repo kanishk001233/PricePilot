@@ -22,16 +22,15 @@ interface InvoiceData {
 }
 
 export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const resendApiKey = process.env.RESEND_API_KEY || 're_FeM3urNq_67mpvjHqyJSpc5rg8gpzVcpi';
   if (!resendApiKey) {
     throw new Error('Missing RESEND_API_KEY');
   }
 
   const resend = new Resend(resendApiKey);
 
-  const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
-  const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
-  const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
+  // Resend uses a full email in the `from` header. Avoid legacy SMTP_USER.
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <pricepilot.store@gmail.com>`;
 
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
   // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
@@ -198,16 +197,15 @@ export interface ReturnData {
 }
 
 export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const resendApiKey = process.env.RESEND_API_KEY || 're_FeM3urNq_67mpvjHqyJSpc5rg8gpzVcpi';
   if (!resendApiKey) {
     throw new Error('Missing RESEND_API_KEY');
   }
 
   const resend = new Resend(resendApiKey);
 
-  const user = process.env.SMTP_USER || 'pricepilot.store@gmail.com';
-  const finalEmail = user.includes('@') ? user : `${user}@gmail.com`;
-  const from = process.env.EMAIL_FROM || `"PricePilot Store" <${finalEmail}>`;
+  // Resend uses a full email in the `from` header. Avoid legacy SMTP_USER.
+  const from = process.env.EMAIL_FROM || `"PricePilot Store" <pricepilot.store@gmail.com>`;
 
   const logoPath = path.join(process.cwd(), 'public', 'logo.png');
   // NOTE: Resend API does not support nodemailer-style `cid` images reliably.
