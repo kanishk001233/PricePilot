@@ -81,7 +81,7 @@ export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
                             : '<h1 style="color: #ffffff; font-size: 24px; font-weight: 850; margin: 0; letter-spacing: -0.5px;">PRICEPILOT</h1>'
                         }
                       </td>
-                      <td style="text-align: right; color: #e0e7ff; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; vertical-align: middle;">
+                      <td style="text-align: right; color: #f8f8f8; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; vertical-align: middle;">
                         Invoice Receipt
                       </td>
                     </tr>
@@ -157,7 +157,7 @@ export async function sendEmailInvoice(toEmail: string, invoice: InvoiceData) {
                 <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 25px; text-align: center;">
                   <p style="font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.5;">
                     Thank you for shopping with PricePilot Store!<br>
-                    This is an automatically generated receipt. For support, reply to store@pricepilot.com.
+                    This is an automatically generated receipt. For support, reply to pricepilot.store@gmail.com.
                   </p>
                 </td>
               </tr>
@@ -239,7 +239,7 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                             : '<h1 style="color: #ffffff; font-size: 24px; font-weight: 850; margin: 0; letter-spacing: -0.5px;">PRICEPILOT</h1>'
                         }
                       </td>
-                      <td style="text-align: right; color: #fee2e2; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; vertical-align: middle;">
+                      <td style="text-align: right; color: #fafafa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; vertical-align: middle;">
                         Return Processed
                       </td>
                     </tr>
@@ -319,7 +319,7 @@ export async function sendEmailReturn(toEmail: string, returnData: ReturnData) {
                 <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 25px; text-align: center;">
                   <p style="font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.5;">
                     This return has been successfully processed in our system.<br>
-                    If you have any questions, please reply to store@pricepilot.com.
+                    If you have any questions, please reply to pricepilot.store@gmail.com.
                   </p>
                 </td>
               </tr>
